@@ -11,3 +11,23 @@ add_executable(gusgba
     src/mmu.c
     src/main.c
 )
+
+add_library(asbase SHARED
+    src/asm/str.c
+    src/asm/token.c
+    src/asm/error.c
+    src/asm/lex.c
+    )
+
+enable_testing()
+
+include_directories(${PROJECT_SOURCE_DIR}/test)
+
+add_executable(gusgbatest
+    test/asm/lex_test.c
+    test/main.c
+    )
+target_link_libraries(gusgbatest
+    asbase
+    )
+add_test(test gusgbatest)
