@@ -115,10 +115,9 @@ static token_t *read_keyword(lex_t *l, int c)
         str_append(str, '\0');
         tok_str = str_destroy(str);
         tok_type = get_token_type(tok_str);
+        free(tok_str);
         if (tok_type == TOKEN_IDENT) {
-            lex_error(l, "invalid keyword");
-        } else {
-            free(tok_str);
+            return token_create(TOKEN_KW_INVALID);
         }
         return token_create(tok_type);
     }

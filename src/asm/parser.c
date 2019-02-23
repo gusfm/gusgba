@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "arm7_enc.h"
 
 typedef enum {
     REG_R0,
@@ -90,6 +91,15 @@ static int parse_comma(token_type_t tok_type)
     return (char)tok_type == ',';
 }
 
+static int out_u32(FILE *f, uint32_t op)
+{
+    size_t ret = fwrite(&op, 4, 1, f);
+    if (ret != 1) {
+        fprintf(stderr, "failed to write opcode 0x%x\n", op);
+    }
+    return PARSER_OK;
+}
+
 static int parse_cmd_and(parser_t *p)
 {
     reg_t rd, rn, rm;
@@ -130,8 +140,7 @@ static int parse_cmd_and(parser_t *p)
     if (parser_next_token_type(p) != TOKEN_END) {
         return PARSER_ERR_INVALID_SYNTAX;
     }
-
-    return PARSER_OK;
+    return out_u32(p->out, arm7_enc_and_imm(rd, rn, rm, 0, 0));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)

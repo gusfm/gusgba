@@ -16,6 +16,7 @@ add_library(asbase SHARED
     src/asm/str.c
     src/asm/token.c
     src/asm/lex.c
+    src/asm/arm7_enc.c
     src/asm/parser.c
     )
 
