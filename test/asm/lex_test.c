@@ -22,7 +22,7 @@ static int check_next_token_str(lex_t *l, token_type_t type, const char *s)
     return 0;
 }
 
-static int lex_test_1(void)
+static int basic(void)
 {
     lex_t lex;
     char src[] = "AND R0, R1, R2, LSL #0";
@@ -45,5 +45,5 @@ static int lex_test_1(void)
 
 void lex_test(void)
 {
-    ut_run(lex_test_1);
+    ut_run(basic);
 }

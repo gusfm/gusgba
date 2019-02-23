@@ -3,12 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "error.h"
 #include "str.h"
 #include "token.h"
-
-int line;
-int col;
 
 static struct keyword {
     const char *str;
@@ -77,7 +73,7 @@ static void lex_skip_space(lex_t *l)
 {
     int c;
     while ((c = lex_readc(l)) != EOF) {
-        if (isspace(c)) {
+        if (isblank(c)) {
             continue;
         }
         lex_ungetc(l, c);
@@ -120,7 +116,7 @@ static token_t *read_keyword(lex_t *l, int c)
         tok_str = str_destroy(str);
         tok_type = get_token_type(tok_str);
         if (tok_type == TOKEN_IDENT) {
-            ccerror("invalid keyword %s\n", tok_str);
+            lex_error(l, "invalid keyword");
         } else {
             free(tok_str);
         }
@@ -144,12 +140,22 @@ static token_t *read_number(lex_t *l, int c)
     }
 }
 
+static size_t lex_get_file_pos(lex_t *l)
+{
+    long ret = ftell(l->input);
+    if (ret < 0) {
+        perror("ftell");
+        return 0;
+    }
+    return (size_t)ret;
+}
+
 token_t *lex_next_token(lex_t *l)
 {
     int c;
     lex_skip_space(l);
-    line = l->line;
-    col = l->col;
+    l->last_tok_line = l->line;
+    l->last_tok_col = l->col;
     c = lex_readc(l);
     switch (c) {
         case ',':
@@ -166,6 +172,11 @@ token_t *lex_next_token(lex_t *l)
         case '8':
         case '9':
             return read_number(l, c);
+        case '\0':
+        case '\n':
+        case '\r':
+            l->checkpoint = lex_get_file_pos(l);
+            return token_create(TOKEN_END);
         case EOF:
             return NULL;
         default:
@@ -178,5 +189,26 @@ int lex_init(lex_t *l, FILE *input)
     l->input = input;
     l->line = 1;
     l->col = 1;
+    l->checkpoint = 0;
     return 0;
+}
+
+void lex_error(lex_t *l, const char *msg)
+{
+    char str[100];
+    size_t error_size = lex_get_file_pos(l) - l->checkpoint;
+    size_t read_size = error_size < sizeof(str) ? error_size : sizeof(str);
+
+    fseek(l->input, (long)l->checkpoint, SEEK_SET);
+    if (fread(str, 1, read_size, l->input) != read_size) {
+        printf("error: fread");
+        return;
+    }
+    str[read_size] = '\0';
+    fprintf(stderr, "%d:%d: error: %s\n%s\n", l->last_tok_line, l->last_tok_col,
+            msg, str);
+    for (int i = 1; i < l->last_tok_col; ++i) {
+        fputc(' ', stderr);
+    }
+    fprintf(stderr, "^\n");
 }

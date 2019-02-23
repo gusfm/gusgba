@@ -5,6 +5,7 @@ typedef enum {
     TOKEN_IDENT = 0x100,
     TOKEN_CHAR,
     TOKEN_CONSTANT,
+    TOKEN_END,
     TOKEN_KW_R0,
     TOKEN_KW_R1,
     TOKEN_KW_R2,
@@ -46,8 +47,6 @@ typedef enum {
 
 typedef struct {
     token_type_t type;
-    int line;
-    int col;
     char *s;
 } token_t;
 

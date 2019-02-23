@@ -15,8 +15,8 @@ add_executable(gusgba
 add_library(asbase SHARED
     src/asm/str.c
     src/asm/token.c
-    src/asm/error.c
     src/asm/lex.c
+    src/asm/parser.c
     )
 
 enable_testing()
@@ -25,6 +25,7 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 
 add_executable(gusgbatest
     test/asm/lex_test.c
+    test/asm/parser_test.c
     test/main.c
     )
 target_link_libraries(gusgbatest
