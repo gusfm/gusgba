@@ -139,16 +139,6 @@ static token_t *read_number(lex_t *l, int c)
     }
 }
 
-static size_t lex_get_file_pos(lex_t *l)
-{
-    long ret = ftell(l->input);
-    if (ret < 0) {
-        perror("ftell");
-        return 0;
-    }
-    return (size_t)ret;
-}
-
 token_t *lex_next_token(lex_t *l)
 {
     int c;
@@ -174,7 +164,7 @@ token_t *lex_next_token(lex_t *l)
         case '\0':
         case '\n':
         case '\r':
-            l->checkpoint = lex_get_file_pos(l);
+            l->checkpoint = ftell(l->input);
             return token_create(TOKEN_END);
         case EOF:
             return NULL;
@@ -195,15 +185,11 @@ int lex_init(lex_t *l, FILE *input)
 void lex_error(lex_t *l, const char *msg)
 {
     char str[100];
-    size_t error_size = lex_get_file_pos(l) - l->checkpoint;
-    size_t read_size = error_size < sizeof(str) ? error_size : sizeof(str);
-
-    fseek(l->input, (long)l->checkpoint, SEEK_SET);
-    if (fread(str, 1, read_size, l->input) != read_size) {
-        printf("error: fread");
+    fseek(l->input, l->checkpoint, SEEK_SET);
+    if (fgets(str, sizeof(str), l->input) == NULL) {
+        fprintf(stderr, "%s:%d: error: fgets\n", __func__, __LINE__);
         return;
     }
-    str[read_size] = '\0';
     fprintf(stderr, "%d:%d: error: %s\n%s\n", l->last_tok_line, l->last_tok_col,
             msg, str);
     for (int i = 1; i < l->last_tok_col; ++i) {

@@ -10,7 +10,7 @@ typedef struct {
     int col;
     int last_tok_line;
     int last_tok_col;
-    size_t checkpoint;
+    long checkpoint;
 } lex_t;
 
 int lex_init(lex_t *l, FILE *input);
