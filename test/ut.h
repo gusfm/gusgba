@@ -10,6 +10,30 @@ struct ut {
 
 extern struct ut unit_test;
 
+#define VFMT(x)                             \
+    _Generic((x), char                      \
+             : "%c (0x%x)", unsigned char   \
+             : "%hhu (0x%x)", signed short  \
+             : "%hd (0x%x)", unsigned short \
+             : "%hu (0x%x)", signed int     \
+             : "%d (0x%x)", unsigned int    \
+             : "%u (0x%x)", long int        \
+             : "%ld (0x%x)")
+
+#define ASSERT_EQ(expected, actual)                                         \
+    do {                                                                    \
+        if (!(expected == actual)) {                                        \
+            printf("%s:%d: assertion failed: %s == %s", __FILE__, __LINE__, \
+                   #expected, #actual);                                     \
+            printf("\n\texpected: ");                                       \
+            printf(VFMT(expected), expected, expected);                     \
+            printf("\n\tactual: ");                                         \
+            printf(VFMT(actual), actual, actual);                           \
+            printf("\n");                                                   \
+            return -1;                                                      \
+        }                                                                   \
+    } while (0)
+
 #define ASSERT(test)                                                    \
     do {                                                                \
         if (!(test)) {                                                  \

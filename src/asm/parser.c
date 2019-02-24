@@ -21,6 +21,14 @@ typedef enum {
     REG_INVALID
 } reg_t;
 
+typedef enum {
+    SHIFT_TYPE_LSL,
+    SHIFT_TYPE_LSR,
+    SHIFT_TYPE_ASR,
+    SHIFT_TYPE_ROR,
+    SHIFT_TYPE_INVALID
+} shift_type_t;
+
 int parser_init(parser_t *p, FILE *input, FILE *output)
 {
     lex_init(&p->l, input);
@@ -86,6 +94,23 @@ static reg_t parse_reg(token_type_t tok_type)
     }
 }
 
+static shift_type_t parse_shift(token_type_t tok_type)
+{
+    switch(tok_type) {
+        case TOKEN_KW_ASL:
+        case TOKEN_KW_LSL:
+            return SHIFT_TYPE_LSL;
+        case TOKEN_KW_LSR:
+            return SHIFT_TYPE_LSR;
+        case TOKEN_KW_ASR:
+            return SHIFT_TYPE_ASR;
+        case TOKEN_KW_ROR:
+            return SHIFT_TYPE_ROR;
+        default:
+            return SHIFT_TYPE_INVALID;
+    }
+}
+
 static int parse_comma(token_type_t tok_type)
 {
     return (char)tok_type == ',';
@@ -103,44 +128,46 @@ static int out_u32(FILE *f, uint32_t op)
 static int parse_cmd_and(parser_t *p)
 {
     reg_t rd, rn, rm;
+    shift_type_t shift_type;
 
     rd = parse_reg(parser_next_token_type(p));
     if (rd == REG_INVALID) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
     if (!parse_comma(parser_next_token_type(p))) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
 
     rn = parse_reg(parser_next_token_type(p));
     if (rn == REG_INVALID) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
     if (!parse_comma(parser_next_token_type(p))) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
 
     rm = parse_reg(parser_next_token_type(p));
     if (rm == REG_INVALID) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
     if (!parse_comma(parser_next_token_type(p))) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
 
-    if (parser_next_token_type(p) != TOKEN_KW_LSL) {
-        return PARSER_ERR_INVALID_SYNTAX;
+    shift_type = parse_shift(parser_next_token_type(p));
+    if (shift_type == SHIFT_TYPE_INVALID) {
+        return PARSER_ERR_SYNTAX;
     }
     if (parser_next_token_type(p) != '#') {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
     if (parser_next_token_type(p) != TOKEN_CONSTANT) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
     if (parser_next_token_type(p) != TOKEN_END) {
-        return PARSER_ERR_INVALID_SYNTAX;
+        return PARSER_ERR_SYNTAX;
     }
-    return out_u32(p->out, arm7_enc_and_imm(rd, rn, rm, 0, 0));
+    return out_u32(p->out, arm7_enc_and_imm(rd, rn, rm, shift_type, 0));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
@@ -151,7 +178,7 @@ static int parse_cmd(parser_t *p, token_t *tok)
         case TOKEN_KW_AND:
             return parse_cmd_and(p);
         default:
-            return PARSER_ERR_INVALID_CMD;
+            return PARSER_ERR_CMD;
     }
 }
 
@@ -163,6 +190,7 @@ int parser_exec(parser_t *p)
         if ((ret = parse_cmd(p, tok)) != 0) {
             return ret;
         }
+        lex_checkpoint(&p->l);
     }
     return PARSER_OK;
 }
@@ -172,9 +200,9 @@ static const char *parser_strerror(int error)
     switch (error) {
         case PARSER_OK:
             return "";
-        case PARSER_ERR_INVALID_CMD:
+        case PARSER_ERR_CMD:
             return "invalid command";
-        case PARSER_ERR_INVALID_SYNTAX:
+        case PARSER_ERR_SYNTAX:
             return "invalid syntax";
         default:
             return "unknown error";

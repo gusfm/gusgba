@@ -164,7 +164,6 @@ token_t *lex_next_token(lex_t *l)
         case '\0':
         case '\n':
         case '\r':
-            l->checkpoint = ftell(l->input);
             return token_create(TOKEN_END);
         case EOF:
             return NULL;
@@ -180,6 +179,11 @@ int lex_init(lex_t *l, FILE *input)
     l->col = 1;
     l->checkpoint = 0;
     return 0;
+}
+
+void lex_checkpoint(lex_t *l)
+{
+    l->checkpoint = ftell(l->input);
 }
 
 void lex_error(lex_t *l, const char *msg)
