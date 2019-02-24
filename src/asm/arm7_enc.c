@@ -1,16 +1,12 @@
 #include "arm7_enc.h"
 
-#define REG(r) (uint32_t)(r & 0xf)
-#define SHF_AM(shift_amount) (uint32_t)(shift_amount & 0x1f)
-#define SHF_TP(shift_type) (uint32_t)(shift_type & 0x3)
+#define M2(val) ((uint32_t)val & 0x3u)
+#define M4(val) ((uint32_t)val & 0xfu)
+#define M5(val) ((uint32_t)val & 0x1fu)
 
-uint32_t arm7_enc_cond(int cond)
+uint32_t arm7_enc_and_imm(int cond, int rd, int rn, int rm, int shf_tp,
+                          int shf_am)
 {
-    return (cond & 0xf) < 28;
-}
-
-uint32_t arm7_enc_and_imm(int rd, int rn, int rm, int shf_tp, int shf_am)
-{
-    return REG(rn) << 16 | REG(rd) << 12 | SHF_AM(shf_am) << 7 |
-           SHF_TP(shf_tp) << 5 | REG(rm);
+    return M4(cond) << 28 | M4(rn) << 16 | M4(rd) << 12 | M5(shf_am) << 7 |
+           M2(shf_tp) << 5 | M4(rm);
 }

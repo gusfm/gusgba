@@ -29,6 +29,25 @@ typedef enum {
     SHIFT_TYPE_INVALID
 } shift_type_t;
 
+typedef enum {
+    COND_EQ,
+    COND_NE,
+    COND_CS,
+    COND_CC,
+    COND_MI,
+    COND_PL,
+    COND_VS,
+    COND_VC,
+    COND_HI,
+    COND_LS,
+    COND_GE,
+    COND_LT,
+    COND_GT,
+    COND_LE,
+    COND_AL,
+    COND_INVALID,
+} cond_t;
+
 int parser_init(parser_t *p, FILE *input, FILE *output)
 {
     lex_init(&p->l, input);
@@ -96,7 +115,7 @@ static reg_t parse_reg(token_type_t tok_type)
 
 static shift_type_t parse_shift(token_type_t tok_type)
 {
-    switch(tok_type) {
+    switch (tok_type) {
         case TOKEN_KW_ASL:
         case TOKEN_KW_LSL:
             return SHIFT_TYPE_LSL;
@@ -167,7 +186,8 @@ static int parse_cmd_and(parser_t *p)
     if (parser_next_token_type(p) != TOKEN_END) {
         return PARSER_ERR_SYNTAX;
     }
-    return out_u32(p->out, arm7_enc_and_imm(rd, rn, rm, shift_type, 0));
+    return out_u32(p->out,
+                   arm7_enc_and_imm(COND_AL, rd, rn, rm, shift_type, 0));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)

@@ -25,6 +25,7 @@ enable_testing()
 include_directories(${PROJECT_SOURCE_DIR}/test)
 
 add_executable(gusgbatest
+    test/asm/asm.c
     test/asm/lex_test.c
     test/asm/parser_test.c
     test/main.c
