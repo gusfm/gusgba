@@ -1,4 +1,6 @@
 #include "parser.h"
+
+#include <stdlib.h>
 #include "arm7_enc.h"
 
 typedef enum {
@@ -71,6 +73,18 @@ static token_type_t parser_next_token_type(parser_t *p)
     }
     token_destroy(tok);
     return type;
+}
+
+static int parse_long(parser_t *p, long int *number)
+{
+    int ret = -1;
+    token_t *tok = parser_next_token(p);
+    if (tok->type == TOKEN_CONSTANT) {
+        *number = strtol(tok->s, NULL, 10);
+        ret = 0;
+    }
+    token_destroy(tok);
+    return ret;
 }
 
 static reg_t parse_reg(token_type_t tok_type)
@@ -147,7 +161,8 @@ static int out_u32(FILE *f, uint32_t op)
 static int parse_cmd_and(parser_t *p)
 {
     reg_t rd, rn, rm;
-    shift_type_t shift_type;
+    shift_type_t shift_type = 0;
+    long int shift_am = 0;
 
     rd = parse_reg(parser_next_token_type(p));
     if (rd == REG_INVALID) {
@@ -169,25 +184,29 @@ static int parse_cmd_and(parser_t *p)
     if (rm == REG_INVALID) {
         return PARSER_ERR_SYNTAX;
     }
-    if (!parse_comma(parser_next_token_type(p))) {
-        return PARSER_ERR_SYNTAX;
-    }
-
-    shift_type = parse_shift(parser_next_token_type(p));
-    if (shift_type == SHIFT_TYPE_INVALID) {
-        return PARSER_ERR_SYNTAX;
-    }
-    if (parser_next_token_type(p) != '#') {
-        return PARSER_ERR_SYNTAX;
-    }
-    if (parser_next_token_type(p) != TOKEN_CONSTANT) {
-        return PARSER_ERR_SYNTAX;
+    if (parse_comma(parser_next_token_type(p))) {
+        shift_type = parse_shift(parser_next_token_type(p));
+        if (shift_type == SHIFT_TYPE_INVALID) {
+            return PARSER_ERR_SYNTAX;
+        }
+        if (parser_next_token_type(p) != '#') {
+            return PARSER_ERR_SYNTAX;
+        }
+        if (parse_long(p, &shift_am) != 0) {
+            return PARSER_ERR_SYNTAX;
+        }
+        if (shift_am < 0 || shift_am > 31) {
+            return PARSER_ERR_SHIFT;
+        }
+        if (shift_am == 0)
+            shift_type = 0;
     }
     if (parser_next_token_type(p) != TOKEN_END) {
         return PARSER_ERR_SYNTAX;
     }
-    return out_u32(p->out,
-                   arm7_enc_and_imm(COND_AL, rd, rn, rm, shift_type, 0));
+
+    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, rm, shift_type,
+                                            (int)shift_am));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
@@ -224,6 +243,8 @@ static const char *parser_strerror(int error)
             return "invalid command";
         case PARSER_ERR_SYNTAX:
             return "invalid syntax";
+        case PARSER_ERR_SHIFT:
+            return "shift expression is too large";
         default:
             return "unknown error";
     }
