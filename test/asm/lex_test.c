@@ -25,7 +25,7 @@ static int check_next_token_str(lex_t *l, token_type_t type, const char *s)
 static int basic(void)
 {
     lex_t lex;
-    char src[] = "AND R0, R1, R2, LSL #0";
+    char src[] = "and r0, r1, r2, lsl #0";
     FILE *stream = fmemopen(src, sizeof(src) - 1, "r");
     ASSERT(stream != NULL);
     ASSERT(lex_init(&lex, stream) == 0);
