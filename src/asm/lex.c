@@ -135,7 +135,7 @@ static token_t *read_number(lex_t *l, int c)
     str_append(str, (char)c);
     for (;;) {
         c = lex_readc(l);
-        if (isdigit(c)) {
+        if (isxdigit(c) || c == 'x') {
             str_append(str, (char)c);
             continue;
         }

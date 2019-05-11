@@ -54,6 +54,15 @@ static int dp_and(void)
     ASSERT(asm_test("and r0, r1, r2, ror #32", 0) == PARSER_ERR_SHIFT);
     ASSERT(asm_test("and r0, r1, r2, ror r1", 0xe0010172) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, r2, ror r15", 0xe0010f72) == PARSER_OK);
+    /* Immediate value */
+    ASSERT(asm_test("and r0, r1, #0", 0xe2010000) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #1", 0xe2010001) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #101", 0xe2010065) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #0xff", 0xe20100ff) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #0xfff", 0) == PARSER_ERR_INVALID_CONSTANT);
+    ASSERT(asm_test("and r0, r1, #0xff00", 0xe2010cff) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #0xff0000", 0xe20108ff) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, #0xff000000", 0xe20104ff) == PARSER_OK);
     return 0;
 }
 

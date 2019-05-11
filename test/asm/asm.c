@@ -1,6 +1,6 @@
+#include "asm.h"
 #include <stdio.h>
 #include <string.h>
-#include "asm.h"
 #include "asm/parser.h"
 #include "ut.h"
 

@@ -1,6 +1,7 @@
 #ifndef TEST_ASM_H
 #define TEST_ASM_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 int asm_test(const char *src, uint32_t opcode);

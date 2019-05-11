@@ -1,9 +1,10 @@
 #include "arm7_enc.h"
 
-#define M1(val) (val & 0x1u)
-#define M2(val) (val & 0x3u)
-#define M4(val) (val & 0xfu)
-#define M5(val) (val & 0x1fu)
+#define M1(val) ((uint32_t)val & 0x1u)
+#define M2(val) ((uint32_t)val & 0x3u)
+#define M4(val) ((uint32_t)val & 0xfu)
+#define M5(val) ((uint32_t)val & 0x1fu)
+#define M8(val) ((uint32_t)val & 0xffu)
 
 static uint32_t enc_shift(shift_t *s)
 {
@@ -15,8 +16,15 @@ static uint32_t enc_shift(shift_t *s)
     return val;
 }
 
-uint32_t arm7_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, shift_t *s)
+static uint32_t enc_imm_oper(imm_val_t *i)
 {
-    uint32_t shift = enc_shift(s);
-    return M4(cond) << 28 | M4(rn) << 16 | M4(rd) << 12 | shift;
+    return M4(i->rotate) << 8 | M8(i->imm);
+}
+
+uint32_t arm7_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, oper2_t *o)
+{
+    uint32_t oper2 =
+        o->is_imm_val ? enc_imm_oper(&o->imm_val) : enc_shift(&o->shift);
+    return M4(cond) << 28 | M1(o->is_imm_val) << 25 | M4(rn) << 16 |
+           M4(rd) << 12 | oper2;
 }

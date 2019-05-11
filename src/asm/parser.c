@@ -40,7 +40,8 @@ static int parse_number(parser_t *p, long int *number)
     int ret = PARSER_ERR_SYNTAX;
     token_t *tok = parser_next_token(p);
     if (tok->type == TOKEN_CONSTANT) {
-        *number = strtol(tok->s, NULL, 10);
+        int base = tok->s[1] == 'x' ? 16 : 10;
+        *number = strtol(tok->s, NULL, base);
         ret = PARSER_OK;
     }
     token_destroy(tok);
@@ -139,9 +140,25 @@ static int out_u32(FILE *f, uint32_t op)
     return PARSER_OK;
 }
 
-static int parse_shift(parser_t *p, shift_t *shift)
+static int parse_imm_val(parser_t *p, imm_val_t *imm_val)
 {
-    CHK(parse_reg(parser_next_token_type(p), &shift->rm));
+    int rotate = 0;
+    long int number;
+    CHK(parse_number(p, &number));
+    while (number & 0xffffff00) {
+        number = (number & 0xc0000000) >> 30 | (number << 2);
+        ++rotate;
+        if (rotate > 0xf)
+            return PARSER_ERR_INVALID_CONSTANT;
+    }
+    imm_val->imm = (uint8_t)number;
+    imm_val->rotate = (uint8_t)rotate;
+    return PARSER_OK;
+}
+
+static int parse_shift(parser_t *p, token_type_t tok_type, shift_t *shift)
+{
+    CHK(parse_reg(tok_type, &shift->rm));
     if (parser_next_token_type(p) == ',') {
         CHK(parse_shift_type(parser_next_token_type(p), &shift->type));
         token_type_t type = parser_next_token_type(p);
@@ -167,10 +184,23 @@ static int parse_shift(parser_t *p, shift_t *shift)
     return PARSER_OK;
 }
 
+static int parse_oper2(parser_t *p, oper2_t *oper2)
+{
+    token_type_t tok_type = parser_next_token_type(p);
+    if (tok_type == '#') {
+        oper2->is_imm_val = true;
+        return parse_imm_val(p, &oper2->imm_val);
+    } else {
+        oper2->is_imm_val = false;
+        return parse_shift(p, tok_type, &oper2->shift);
+    }
+    return PARSER_OK;
+}
+
 static int parse_cmd_and(parser_t *p)
 {
     reg_t rd, rn;
-    shift_t shift;
+    oper2_t oper2;
 
     CHK(parse_reg(parser_next_token_type(p), &rd));
     if (parser_next_token_type(p) != ',') {
@@ -182,12 +212,12 @@ static int parse_cmd_and(parser_t *p)
         return PARSER_ERR_SYNTAX;
     }
 
-    CHK(parse_shift(p, &shift));
+    CHK(parse_oper2(p, &oper2));
     if (parser_next_token_type(p) != TOKEN_END) {
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, &shift));
+    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, &oper2));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
@@ -226,6 +256,8 @@ static const char *parser_strerror(int error)
             return "invalid syntax";
         case PARSER_ERR_SHIFT:
             return "shift expression is too large";
+        case PARSER_ERR_INVALID_CONSTANT:
+            return "invalid constant after fixup";
         default:
             return "unknown error";
     }

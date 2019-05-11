@@ -60,10 +60,18 @@ typedef struct {
 } shift_t;
 
 typedef struct {
-    int imm;
-    int rotate;
-} imm_oper_t;
+    uint8_t imm;
+    uint8_t rotate;
+} imm_val_t;
 
-uint32_t arm7_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, shift_t *s);
+typedef struct {
+    bool is_imm_val;
+    union {
+        shift_t shift;
+        imm_val_t imm_val;
+    };
+} oper2_t;
+
+uint32_t arm7_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, oper2_t *o);
 
 #endif /* ARM7_ENC_H */

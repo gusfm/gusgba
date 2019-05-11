@@ -8,6 +8,7 @@ enum {
     PARSER_ERR_CMD,
     PARSER_ERR_SYNTAX,
     PARSER_ERR_SHIFT,
+    PARSER_ERR_INVALID_CONSTANT,
 };
 
 typedef struct {
