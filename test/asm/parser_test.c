@@ -6,6 +6,17 @@
 #include "test.h"
 #include "ut.h"
 
+static int registers(void)
+{
+    ASSERT(asm_test("and r0, r1, r2, lsl r3", 0xe0010312) == PARSER_OK);
+    ASSERT(asm_test("and r4, r5, r6, lsl r7", 0xe0054716) == PARSER_OK);
+    ASSERT(asm_test("and r8, r9, r10, lsl r11", 0xe0098b1a) == PARSER_OK);
+    ASSERT(asm_test("and r8, r9, sl, lsl fp", 0xe0098b1a) == PARSER_OK);
+    ASSERT(asm_test("and r12, r13, r14, lsl r15", 0xe00dcf1e) == PARSER_OK);
+    ASSERT(asm_test("and ip, sp, lr, lsl pc", 0xe00dcf1e) == PARSER_OK);
+    return 0;
+}
+
 static int dp_and(void)
 {
     /* Syntax error */
@@ -48,5 +59,6 @@ static int dp_and(void)
 
 void parser_test(void)
 {
+    ut_run(registers);
     ut_run(dp_and);
 }

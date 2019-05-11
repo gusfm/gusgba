@@ -80,21 +80,27 @@ static int parse_reg(token_type_t tok_type, reg_t *reg)
         case TOKEN_KW_R9:
             *reg = REG_R9;
             return PARSER_OK;
+        case TOKEN_KW_SL:
         case TOKEN_KW_R10:
             *reg = REG_R10;
             return PARSER_OK;
+        case TOKEN_KW_FP:
         case TOKEN_KW_R11:
             *reg = REG_R11;
             return PARSER_OK;
+        case TOKEN_KW_IP:
         case TOKEN_KW_R12:
             *reg = REG_R12;
             return PARSER_OK;
+        case TOKEN_KW_SP:
         case TOKEN_KW_R13:
             *reg = REG_R13;
             return PARSER_OK;
+        case TOKEN_KW_LR:
         case TOKEN_KW_R14:
             *reg = REG_R14;
             return PARSER_OK;
+        case TOKEN_KW_PC:
         case TOKEN_KW_R15:
             *reg = REG_R15;
             return PARSER_OK;
