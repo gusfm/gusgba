@@ -3,52 +3,12 @@
 #include <stdlib.h>
 #include "arm7_enc.h"
 
-typedef enum {
-    REG_R0,
-    REG_R1,
-    REG_R2,
-    REG_R3,
-    REG_R4,
-    REG_R5,
-    REG_R6,
-    REG_R7,
-    REG_R8,
-    REG_R9,
-    REG_R10,
-    REG_R11,
-    REG_R12,
-    REG_R13,
-    REG_R14,
-    REG_R15,
-    REG_INVALID
-} reg_t;
-
-typedef enum {
-    SHIFT_TYPE_LSL,
-    SHIFT_TYPE_LSR,
-    SHIFT_TYPE_ASR,
-    SHIFT_TYPE_ROR,
-    SHIFT_TYPE_INVALID
-} shift_type_t;
-
-typedef enum {
-    COND_EQ,
-    COND_NE,
-    COND_CS,
-    COND_CC,
-    COND_MI,
-    COND_PL,
-    COND_VS,
-    COND_VC,
-    COND_HI,
-    COND_LS,
-    COND_GE,
-    COND_LT,
-    COND_GT,
-    COND_LE,
-    COND_AL,
-    COND_INVALID,
-} cond_t;
+#define CHK(f)               \
+    do {                     \
+        int rv = f;          \
+        if (rv != PARSER_OK) \
+            return rv;       \
+    } while (0)
 
 int parser_init(parser_t *p, FILE *input, FILE *output)
 {
@@ -75,78 +35,93 @@ static token_type_t parser_next_token_type(parser_t *p)
     return type;
 }
 
-static int parse_long(parser_t *p, long int *number)
+static int parse_number(parser_t *p, long int *number)
 {
-    int ret = -1;
+    int ret = PARSER_ERR_SYNTAX;
     token_t *tok = parser_next_token(p);
     if (tok->type == TOKEN_CONSTANT) {
         *number = strtol(tok->s, NULL, 10);
-        ret = 0;
+        ret = PARSER_OK;
     }
     token_destroy(tok);
     return ret;
 }
 
-static reg_t parse_reg(token_type_t tok_type)
+static int parse_reg(token_type_t tok_type, reg_t *reg)
 {
     switch (tok_type) {
         case TOKEN_KW_R0:
-            return REG_R0;
+            *reg = REG_R0;
+            return PARSER_OK;
         case TOKEN_KW_R1:
-            return REG_R1;
+            *reg = REG_R1;
+            return PARSER_OK;
         case TOKEN_KW_R2:
-            return REG_R2;
+            *reg = REG_R2;
+            return PARSER_OK;
         case TOKEN_KW_R3:
-            return REG_R3;
+            *reg = REG_R3;
+            return PARSER_OK;
         case TOKEN_KW_R4:
-            return REG_R4;
+            *reg = REG_R4;
+            return PARSER_OK;
         case TOKEN_KW_R5:
-            return REG_R5;
+            *reg = REG_R5;
+            return PARSER_OK;
         case TOKEN_KW_R6:
-            return REG_R6;
+            *reg = REG_R6;
+            return PARSER_OK;
         case TOKEN_KW_R7:
-            return REG_R7;
+            *reg = REG_R7;
+            return PARSER_OK;
         case TOKEN_KW_R8:
-            return REG_R8;
+            *reg = REG_R8;
+            return PARSER_OK;
         case TOKEN_KW_R9:
-            return REG_R9;
+            *reg = REG_R9;
+            return PARSER_OK;
         case TOKEN_KW_R10:
-            return REG_R10;
+            *reg = REG_R10;
+            return PARSER_OK;
         case TOKEN_KW_R11:
-            return REG_R11;
+            *reg = REG_R11;
+            return PARSER_OK;
         case TOKEN_KW_R12:
-            return REG_R12;
+            *reg = REG_R12;
+            return PARSER_OK;
         case TOKEN_KW_R13:
-            return REG_R13;
+            *reg = REG_R13;
+            return PARSER_OK;
         case TOKEN_KW_R14:
-            return REG_R14;
+            *reg = REG_R14;
+            return PARSER_OK;
         case TOKEN_KW_R15:
-            return REG_R15;
+            *reg = REG_R15;
+            return PARSER_OK;
         default:
-            return REG_INVALID;
+            return PARSER_ERR_SYNTAX;
     }
 }
 
-static shift_type_t parse_shift(token_type_t tok_type)
+static int parse_shift_type(token_type_t tok_type, shift_type_t *type)
 {
     switch (tok_type) {
         case TOKEN_KW_ASL:
         case TOKEN_KW_LSL:
-            return SHIFT_TYPE_LSL;
+            *type = SHIFT_TYPE_LSL;
+            return PARSER_OK;
         case TOKEN_KW_LSR:
-            return SHIFT_TYPE_LSR;
+            *type = SHIFT_TYPE_LSR;
+            return PARSER_OK;
         case TOKEN_KW_ASR:
-            return SHIFT_TYPE_ASR;
+            *type = SHIFT_TYPE_ASR;
+            return PARSER_OK;
         case TOKEN_KW_ROR:
-            return SHIFT_TYPE_ROR;
+            *type = SHIFT_TYPE_ROR;
+            return PARSER_OK;
         default:
-            return SHIFT_TYPE_INVALID;
+            return PARSER_ERR_SYNTAX;
     }
-}
-
-static int parse_comma(token_type_t tok_type)
-{
-    return (char)tok_type == ',';
 }
 
 static int out_u32(FILE *f, uint32_t op)
@@ -158,55 +133,55 @@ static int out_u32(FILE *f, uint32_t op)
     return PARSER_OK;
 }
 
+static int parse_shift(parser_t *p, shift_t *shift)
+{
+    CHK(parse_reg(parser_next_token_type(p), &shift->rm));
+    if (parser_next_token_type(p) == ',') {
+        CHK(parse_shift_type(parser_next_token_type(p), &shift->type));
+        token_type_t type = parser_next_token_type(p);
+        if (type == '#') {
+            long int number;
+            CHK(parse_number(p, &number));
+            if (number < 0 || number > 31) {
+                return PARSER_ERR_SHIFT;
+            }
+            if (number == 0)
+                shift->type = 0;
+            shift->is_register = 0;
+            shift->amount = (uint8_t)number;
+        } else {
+            shift->is_register = 1;
+            CHK(parse_reg(type, &shift->rs));
+        }
+    } else {
+        shift->is_register = 0;
+        shift->type = 0;
+        shift->amount = 0;
+    }
+    return PARSER_OK;
+}
+
 static int parse_cmd_and(parser_t *p)
 {
-    reg_t rd, rn, rm;
-    shift_type_t shift_type = 0;
-    long int shift_am = 0;
+    reg_t rd, rn;
+    shift_t shift;
 
-    rd = parse_reg(parser_next_token_type(p));
-    if (rd == REG_INVALID) {
-        return PARSER_ERR_SYNTAX;
-    }
-    if (!parse_comma(parser_next_token_type(p))) {
+    CHK(parse_reg(parser_next_token_type(p), &rd));
+    if (parser_next_token_type(p) != ',') {
         return PARSER_ERR_SYNTAX;
     }
 
-    rn = parse_reg(parser_next_token_type(p));
-    if (rn == REG_INVALID) {
-        return PARSER_ERR_SYNTAX;
-    }
-    if (!parse_comma(parser_next_token_type(p))) {
+    CHK(parse_reg(parser_next_token_type(p), &rn));
+    if (parser_next_token_type(p) != ',') {
         return PARSER_ERR_SYNTAX;
     }
 
-    rm = parse_reg(parser_next_token_type(p));
-    if (rm == REG_INVALID) {
-        return PARSER_ERR_SYNTAX;
-    }
-    if (parse_comma(parser_next_token_type(p))) {
-        shift_type = parse_shift(parser_next_token_type(p));
-        if (shift_type == SHIFT_TYPE_INVALID) {
-            return PARSER_ERR_SYNTAX;
-        }
-        if (parser_next_token_type(p) != '#') {
-            return PARSER_ERR_SYNTAX;
-        }
-        if (parse_long(p, &shift_am) != 0) {
-            return PARSER_ERR_SYNTAX;
-        }
-        if (shift_am < 0 || shift_am > 31) {
-            return PARSER_ERR_SHIFT;
-        }
-        if (shift_am == 0)
-            shift_type = 0;
-    }
+    CHK(parse_shift(p, &shift));
     if (parser_next_token_type(p) != TOKEN_END) {
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, rm, shift_type,
-                                            (int)shift_am));
+    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, &shift));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
