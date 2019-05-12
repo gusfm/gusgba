@@ -126,6 +126,9 @@ static int parse_shift_type(token_type_t tok_type, shift_type_t *type)
         case TOKEN_KW_ROR:
             *type = SHIFT_TYPE_ROR;
             return PARSER_OK;
+        case TOKEN_KW_RRX:
+            *type = SHIFT_TYPE_RRX;
+            return PARSER_OK;
         default:
             return PARSER_ERR_SYNTAX;
     }
@@ -161,6 +164,12 @@ static int parse_shift(parser_t *p, token_type_t tok_type, shift_t *shift)
     CHK(parse_reg(tok_type, &shift->rm));
     if (parser_next_token_type(p) == ',') {
         CHK(parse_shift_type(parser_next_token_type(p), &shift->type));
+        if (shift->type == SHIFT_TYPE_RRX) {
+            shift->type = SHIFT_TYPE_ROR;
+            shift->is_register = 0;
+            shift->amount = 0;
+            return PARSER_OK;
+        }
         token_type_t type = parser_next_token_type(p);
         if (type == '#') {
             long int number;
@@ -171,7 +180,7 @@ static int parse_shift(parser_t *p, token_type_t tok_type, shift_t *shift)
                 return PARSER_ERR_SHIFT;
             }
             if (number == 0)
-                shift->type = 0;
+                shift->type = SHIFT_TYPE_LSL;
             shift->is_register = 0;
             shift->amount = (uint8_t)number;
         } else {

@@ -49,6 +49,7 @@ typedef enum {
     TOKEN_KW_LSR,
     TOKEN_KW_ASR,
     TOKEN_KW_ROR,
+    TOKEN_KW_RRX,
     TOKEN_KW_INVALID
 } token_type_t;
 
