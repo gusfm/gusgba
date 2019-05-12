@@ -42,10 +42,18 @@ static int dp_and(void)
     ASSERT(asm_test("and r0, r1, r2, lsl #32", 0) == PARSER_ERR_SHIFT);
     ASSERT(asm_test("and r0, r1, r2, lsl r1", 0xe0010112) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, r2, lsl r15", 0xe0010f12) == PARSER_OK);
+    /* LSR */
+    ASSERT(asm_test("and r0, r1, r2, lsr #1", 0xe00100a2) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, r2, lsr #31", 0xe0010fa2) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, r2, lsr #32", 0xe0010022) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, r2, lsr #33", 0) == PARSER_ERR_SHIFT);
+    ASSERT(asm_test("and r0, r1, r2, lsr r1", 0xe0010132) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, r2, lsr r15", 0xe0010f32) == PARSER_OK);
     /* ASR */
     ASSERT(asm_test("and r0, r1, r2, asr #1", 0xe00100c2) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, r2, asr #31", 0xe0010fc2) == PARSER_OK);
-    ASSERT(asm_test("and r0, r1, r2, asr #32", 0) == PARSER_ERR_SHIFT);
+    ASSERT(asm_test("and r0, r1, r2, asr #32", 0xe0010042) == PARSER_OK);
+    ASSERT(asm_test("and r0, r1, r2, asr #33", 0) == PARSER_ERR_SHIFT);
     ASSERT(asm_test("and r0, r1, r2, asr r1", 0xe0010152) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, r2, asr r15", 0xe0010f52) == PARSER_OK);
     /* ROR */

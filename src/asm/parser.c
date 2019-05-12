@@ -165,7 +165,9 @@ static int parse_shift(parser_t *p, token_type_t tok_type, shift_t *shift)
         if (type == '#') {
             long int number;
             CHK(parse_number(p, &number));
-            if (number < 0 || number > 31) {
+            if (number < 0 || number > 32 ||
+                (number == 32 && shift->type != SHIFT_TYPE_LSR &&
+                 shift->type != SHIFT_TYPE_ASR)) {
                 return PARSER_ERR_SHIFT;
             }
             if (number == 0)
