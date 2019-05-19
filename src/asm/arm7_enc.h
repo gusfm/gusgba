@@ -28,6 +28,7 @@ typedef enum {
     SHIFT_TYPE_LSR,
     SHIFT_TYPE_ASR,
     SHIFT_TYPE_ROR,
+    SHIFT_TYPE_RRX,
 } shift_type_t;
 
 typedef enum {
