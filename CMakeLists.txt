@@ -8,6 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 add_executable(gusgba
     src/arm7.c
+    src/arm7_debug.c
     src/mmu.c
     src/main.c
 )
@@ -26,6 +27,7 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 
 add_executable(gusgbatest
     src/arm7.c
+    src/arm7_debug.c
     test/arm7_test.c
     test/asm/asm.c
     test/asm/lex_test.c

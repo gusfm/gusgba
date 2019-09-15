@@ -9,9 +9,7 @@
 
 #define CPU_DEBUG /* debugs are enabled for now */
 #ifdef CPU_DEBUG
-#define printd(fmt, ...) printf(fmt, ##__VA_ARGS__)
-#else
-#define printd(fmt, ...) ((void)0)
+#include "arm7_debug.h"
 #endif
 
 arm7_t arm;
@@ -49,6 +47,20 @@ typedef enum {
 #define ARM7_PSR_IS_SET(psr, flag) (psr & flag)
 #define ARM7_PSR_SET(psr, flag) (psr |= (flag))
 #define ARM7_PSR_CLEAR(psr, flag) (psr &= ~(flag))
+
+#define OPCODE_REG(offset) ((opcode >> offset) & 0xfu)
+#define RM(opcode) OPCODE_REG(0)
+#define RS(opcode) OPCODE_REG(8)
+#define OPER_DP_AND(func) (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode))
+
+#define INSTR_DP_REG(op)                                                      \
+    op##_lsl_imm, op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, op##_asr_imm,     \
+        op##_asr_reg, op##_ror_imm, op##_ror_reg, op##_lsl_imm, op##_lsl_reg, \
+        op##_lsr_imm, op##_lsr_reg, op##_asr_imm, op##_asr_reg, op##_ror_imm, \
+        op##_ror_reg
+
+typedef void (*instr_t)(uint32_t opcode);
+
 
 static uint32_t asr_mask[32]
     = { 0xffffffff, 0x80000000, 0xc0000000, 0xe0000000, 0xf0000000, 0xf8000000,
@@ -108,177 +120,90 @@ static bool evaluate_cond(arm7_condition_t cond, uint32_t cpsr)
 /* Data processing logical shift left immediate */
 static inline uint32_t dp_lsl_imm(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
     uint32_t shift = (opcode >> 7) & 0x1f;
-    if (shift)
-        printd("r%u, lsl #%u\n", rm, shift);
-    else
-        printd("r%u\n", rm);
-    return arm.r[rm] << shift;
+    return arm.r[RM(opcode)] << shift;
 }
 
 /* Data processing logical shift right immediate */
 static inline uint32_t dp_lsr_imm(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
     uint32_t shift = (opcode >> 7) & 0x1f;
     if (!shift) {
-        printd("r%u, lsr #32\n", rm);
         return 0;
     }
-    printd("r%u, lsr #%u\n", rm, shift);
-    return arm.r[rm] >> shift;
+    return arm.r[RM(opcode)] >> shift;
 }
 
 /* Data processing arithmetic shift right immediate */
 static inline uint32_t dp_asr_imm(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
     uint32_t shift = (opcode >> 7) & 0x1f;
-    uint32_t val = arm.r[rm];
+    uint32_t val = arm.r[RM(opcode)];
     uint32_t ret = val >> shift;
     if (val & 0x80000000)
         ret |= asr_mask[shift];
-    printd("r%u, lsr #%u\n", rm, shift);
     return ret;
 }
 
 /* Data processing rotate right immediate */
 static inline uint32_t dp_ror_imm(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
     uint32_t shift = (opcode >> 7) & 0x1f;
-    uint32_t val = arm.r[rm];
+    uint32_t val = arm.r[RM(opcode)];
     uint32_t carry = val & ror_mask[shift];
-    printd("r%u, ror #%u\n", rm, shift);
     return (carry << (32 - shift)) | (val >> shift);
 }
 
 /* Data processing logical shift left reg */
 static inline uint32_t dp_lsl_reg(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
-    uint32_t rs = (opcode >> 8) & 0xf;
-    uint32_t shift = (arm.r[rs] & 0x1f);
-    printd("r%u, lsl r%u\n", rm, rs);
-    return arm.r[rm] << shift;
+    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
+    return arm.r[RM(opcode)] << shift;
 }
 
 /* Data processing logical shift right reg */
 static inline uint32_t dp_lsr_reg(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
-    uint32_t rs = (opcode >> 8) & 0xf;
-    uint32_t shift = (arm.r[rs] & 0x1f);
-    printd("r%u, lsr r%u\n", rm, rs);
-    return arm.r[rm] >> shift;
+    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
+    return arm.r[RM(opcode)] >> shift;
 }
 
 /* Data processing arithmetic shift right reg */
 static inline uint32_t dp_asr_reg(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
-    uint32_t rs = (opcode >> 8) & 0xf;
-    uint32_t shift = (arm.r[rs] & 0x1f);
-    uint32_t val = arm.r[rm];
+    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
+    uint32_t val = arm.r[RM(opcode)];
     uint32_t ret = val >> shift;
     if (val & 0x80000000)
         ret |= asr_mask[shift];
-    printd("r%u, asr r%u\n", rm, rs);
     return ret;
 }
 
 /* Data processing rotate right reg */
 static inline uint32_t dp_ror_reg(uint32_t opcode)
 {
-    uint32_t rm = opcode & 0xf;
-    uint32_t rs = (opcode >> 8) & 0xf;
-    uint32_t shift = (arm.r[rs] & 0x1f);
-    uint32_t val = arm.r[rm];
+    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
+    uint32_t val = arm.r[RM(opcode)];
     uint32_t carry = val & ror_mask[shift];
-    printd("r%u, ror r%u\n", rm, rs);
     return (carry << (32 - shift)) | (val >> shift);
 }
 
 /* AND Rd, Rn, Rm, LSL # */
-static void and_lsl_imm(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_lsl_imm(opcode);
-}
-
+static void and_lsl_imm(uint32_t opcode) { OPER_DP_AND(dp_lsl_imm); }
 /* AND Rd, Rn, Rm, LSR # */
-static void and_lsr_imm(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_lsr_imm(opcode);
-}
-
+static void and_lsr_imm(uint32_t opcode) { OPER_DP_AND(dp_lsr_imm); }
 /* AND Rd, Rn, Rm, ASR # */
-static void and_asr_imm(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_asr_imm(opcode);
-}
-
+static void and_asr_imm(uint32_t opcode) { OPER_DP_AND(dp_asr_imm); }
 /* AND Rd, Rn, Rm, ROR # */
-static void and_ror_imm(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_ror_imm(opcode);
-}
-
+static void and_ror_imm(uint32_t opcode) { OPER_DP_AND(dp_ror_imm); }
 /* AND Rd, Rn, Rm, LSL Rs */
-static void and_lsl_reg(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_lsl_reg(opcode);
-}
-
+static void and_lsl_reg(uint32_t opcode) { OPER_DP_AND(dp_lsl_reg); }
 /* AND Rd, Rn, Rm, LSR Rs */
-static void and_lsr_reg(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_lsr_reg(opcode);
-}
-
+static void and_lsr_reg(uint32_t opcode) { OPER_DP_AND(dp_lsr_reg); }
 /* AND Rd, Rn, Rm, ASR Rs */
-static void and_asr_reg(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_asr_reg(opcode);
-}
-
+static void and_asr_reg(uint32_t opcode) { OPER_DP_AND(dp_asr_reg); }
 /* AND Rd, Rn, Rm, ROR Rs */
-static void and_ror_reg(uint32_t opcode)
-{
-    uint32_t rd = (opcode >> 12) & 0xf;
-    uint32_t rn = (opcode >> 16) & 0xf;
-    printd("and r%u, r%u, ", rd, rn);
-    arm.r[rd] = arm.r[rn] & dp_ror_reg(opcode);
-}
-
-#define INSTR_DP_REG(op)                                                      \
-    op##_lsl_imm, op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, op##_asr_imm,     \
-        op##_asr_reg, op##_ror_imm, op##_ror_reg, op##_lsl_imm, op##_lsl_reg, \
-        op##_lsr_imm, op##_lsr_reg, op##_asr_imm, op##_asr_reg, op##_ror_imm, \
-        op##_ror_reg
-
-typedef void (*instr_t)(uint32_t opcode);
+static void and_ror_reg(uint32_t opcode) { OPER_DP_AND(dp_ror_reg); }
 
 static instr_t instr[0xfff] = {
     /* 0x000 */
@@ -312,7 +237,9 @@ static void arm7_execute(void)
     uint32_t opcode = arm7_fetch();
     if (evaluate_cond(opcode >> 28, arm.cpsr)) {
         uint32_t code = ((opcode >> 16) & 0xff0) | ((opcode >> 4) & 0x0f);
-        printd("[0x%.8x][0x%.3x] ", opcode, code);
+#ifdef CPU_DEBUG
+        arm7_debug(opcode);
+#endif
         instr[code](opcode);
     }
 }
