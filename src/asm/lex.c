@@ -6,6 +6,10 @@
 #include "str.h"
 #include "token.h"
 
+#define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
+
+/* clang-format off */
+
 static struct keyword {
     const char *str;
     token_type_t value;
@@ -56,7 +60,7 @@ static struct keyword {
     { "tst", TOKEN_KW_TST },
 };
 
-#define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
+/* clang-format on */
 
 static int lex_readc(lex_t *l)
 {

@@ -77,7 +77,8 @@ static void arm_debug_dp(uint32_t opcode)
         if (shift == 0 && (opcode & 0x60) == 0)
             snprintf(operand2, sizeof(operand2), "r%u\n", rm);
         else
-            snprintf(operand2, sizeof(operand2), "r%u, %s #%u\n", rm, shift_tp, shift);
+            snprintf(operand2, sizeof(operand2), "r%u, %s #%u\n", rm, shift_tp,
+                     shift);
     }
     printf("%s r%u, r%u, %s", code, rd, rn, operand2);
 }

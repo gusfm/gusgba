@@ -1,5 +1,5 @@
-#include "ut.h"
 #include "test.h"
+#include "ut.h"
 
 struct ut unit_test;
 
