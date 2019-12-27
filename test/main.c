@@ -7,7 +7,7 @@ int main(void)
 {
     lex_test();
     parser_test();
-    arm7_test();
+    arm_test();
     ut_result();
     return 0;
 }

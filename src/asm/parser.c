@@ -1,7 +1,7 @@
 #include "parser.h"
 
 #include <stdlib.h>
-#include "arm7_enc.h"
+#include "arm_enc.h"
 
 #define CHK(f)               \
     do {                     \
@@ -228,7 +228,7 @@ static int parse_cmd_and(parser_t *p)
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm7_enc_and_imm(COND_AL, rd, rn, &oper2));
+    return out_u32(p->out, arm_enc_and_imm(COND_AL, rd, rn, &oper2));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)

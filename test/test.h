@@ -3,6 +3,6 @@
 
 void lex_test(void);
 void parser_test(void);
-void arm7_test(void);
+void arm_test(void);
 
 #endif /* !TEST_H */

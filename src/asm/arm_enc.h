@@ -1,5 +1,5 @@
-#ifndef ARM7_ENC_H
-#define ARM7_ENC_H
+#ifndef ARM_ENC_H
+#define ARM_ENC_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -73,6 +73,6 @@ typedef struct {
     };
 } oper2_t;
 
-uint32_t arm7_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, oper2_t *o);
+uint32_t arm_enc_and_imm(cond_t cond, reg_t rd, reg_t rn, oper2_t *o);
 
-#endif /* ARM7_ENC_H */
+#endif /* ARM_ENC_H */

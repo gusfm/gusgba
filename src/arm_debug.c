@@ -1,9 +1,9 @@
-#include "arm7_debug.h"
+#include "arm_debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-static const char *arm7_debug_dp_get_code(uint32_t opcode)
+static const char *arm_debug_dp_get_code(uint32_t opcode)
 {
     switch ((opcode >> 21) & 0xf) {
         case 0:
@@ -59,9 +59,9 @@ static const char *shift_type(uint32_t opcode)
     }
 }
 
-static void arm7_debug_dp(uint32_t opcode)
+static void arm_debug_dp(uint32_t opcode)
 {
-    const char *code = arm7_debug_dp_get_code(opcode);
+    const char *code = arm_debug_dp_get_code(opcode);
     const char *shift_tp = shift_type(opcode);
     uint32_t rd = (opcode >> 12) & 0xf;
     uint32_t rn = (opcode >> 16) & 0xf;
@@ -83,10 +83,10 @@ static void arm7_debug_dp(uint32_t opcode)
 }
 
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
-    [0 ... 0xf] = arm7_debug_dp,
+    [0 ... 0xf] = arm_debug_dp,
 };
 
-void arm7_debug(uint32_t opcode)
+void arm_debug(uint32_t opcode)
 {
     uint32_t code = ((opcode >> 16) & 0xff0) | ((opcode >> 4) & 0x0f);
     printf("[0x%.8x][0x%.3x] ", opcode, code);

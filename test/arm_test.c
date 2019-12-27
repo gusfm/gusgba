@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "arm7.h"
+#include "arm.h"
 #include "asm/asm.h"
 #include "mmu.h"
 #include "test.h"
@@ -29,11 +29,11 @@ static uint32_t test_arm_rd(const char *src, int rd)
 {
     mem_pos = 0;
     asm_to_opcode(src, memory, sizeof(memory));
-    arm7_step();
+    arm_step();
     return arm.r[rd];
 }
 
-static int arm7_and_test(void)
+static int arm_and_test(void)
 {
     /* basic */
     ASSERT_EQ(0x00000000, test_arm_rd("and r0, r0, r0", R0));
@@ -75,7 +75,7 @@ static int arm7_and_test(void)
     return 0;
 }
 
-void arm7_test(void)
+void arm_test(void)
 {
     arm.r[1] = 0x01;
     arm.r[2] = 0x02;
@@ -86,5 +86,5 @@ void arm7_test(void)
     arm.r[7] = 0x07;
     arm.r[8] = 0xffffffff;
     arm.r[9] = 0x7fffffff;
-    ut_run(arm7_and_test);
+    ut_run(arm_and_test);
 }

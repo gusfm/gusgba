@@ -1,4 +1,4 @@
-#include "arm7.h"
+#include "arm.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,44 +9,44 @@
 
 #define CPU_DEBUG /* debugs are enabled for now */
 #ifdef CPU_DEBUG
-#include "arm7_debug.h"
+#include "arm_debug.h"
 #endif
 
-arm7_t arm;
+arm_t arm;
 
 typedef enum {
-    ARM7_COND_EQ, /* Z set */
-    ARM7_COND_NE, /* Z clear */
-    ARM7_COND_CS, /* C set */
-    ARM7_COND_CC, /* C clear */
-    ARM7_COND_MI, /* N set */
-    ARM7_COND_PL, /* N clear */
-    ARM7_COND_VS, /* V set */
-    ARM7_COND_VC, /* V clear */
-    ARM7_COND_HI, /* C set and Z clear */
-    ARM7_COND_LS, /* C clear or Z set */
-    ARM7_COND_GE, /* N equals V */
-    ARM7_COND_LT, /* N not equal to V */
-    ARM7_COND_GT, /* Z clear AND (N equals V) */
-    ARM7_COND_LE, /* Z set OR (N not equal to V) */
-    ARM7_COND_AL, /* (ignored) */
-    ARM7_COND_RS, /* reserved */
-} arm7_condition_t;
+    ARM_COND_EQ, /* Z set */
+    ARM_COND_NE, /* Z clear */
+    ARM_COND_CS, /* C set */
+    ARM_COND_CC, /* C clear */
+    ARM_COND_MI, /* N set */
+    ARM_COND_PL, /* N clear */
+    ARM_COND_VS, /* V set */
+    ARM_COND_VC, /* V clear */
+    ARM_COND_HI, /* C set and Z clear */
+    ARM_COND_LS, /* C clear or Z set */
+    ARM_COND_GE, /* N equals V */
+    ARM_COND_LT, /* N not equal to V */
+    ARM_COND_GT, /* Z clear AND (N equals V) */
+    ARM_COND_LE, /* Z set OR (N not equal to V) */
+    ARM_COND_AL, /* (ignored) */
+    ARM_COND_RS, /* reserved */
+} arm_condition_t;
 
-#define ARM7_PSR_EQ(psr) (psr & ARM7_PSR_ZERO)
-#define ARM7_PSR_NE(psr) !(psr & ARM7_PSR_ZERO)
-#define ARM7_PSR_CS(psr) (psr & ARM7_PSR_CARRY)
-#define ARM7_PSR_CC(psr) !(psr & ARM7_PSR_CARRY)
-#define ARM7_PSR_MI(psr) (psr & ARM7_PSR_NEGATIVE)
-#define ARM7_PSR_PL(psr) !(psr & ARM7_PSR_NEGATIVE)
-#define ARM7_PSR_VS(psr) (psr & ARM7_PSR_OVERFLOW)
-#define ARM7_PSR_VC(psr) !(psr & ARM7_PSR_OVERFLOW)
-#define ARM7_PSR_GE(psr) (ARM7_PSR_MI(psr) == ARM7_PSR_VS(psr))
-#define ARM7_PSR_LT(psr) (ARM7_PSR_MI(psr) != ARM7_PSR_VS(psr))
+#define ARM_PSR_EQ(psr) (psr & ARM_PSR_ZERO)
+#define ARM_PSR_NE(psr) !(psr & ARM_PSR_ZERO)
+#define ARM_PSR_CS(psr) (psr & ARM_PSR_CARRY)
+#define ARM_PSR_CC(psr) !(psr & ARM_PSR_CARRY)
+#define ARM_PSR_MI(psr) (psr & ARM_PSR_NEGATIVE)
+#define ARM_PSR_PL(psr) !(psr & ARM_PSR_NEGATIVE)
+#define ARM_PSR_VS(psr) (psr & ARM_PSR_OVERFLOW)
+#define ARM_PSR_VC(psr) !(psr & ARM_PSR_OVERFLOW)
+#define ARM_PSR_GE(psr) (ARM_PSR_MI(psr) == ARM_PSR_VS(psr))
+#define ARM_PSR_LT(psr) (ARM_PSR_MI(psr) != ARM_PSR_VS(psr))
 
-#define ARM7_PSR_IS_SET(psr, flag) (psr & flag)
-#define ARM7_PSR_SET(psr, flag) (psr |= (flag))
-#define ARM7_PSR_CLEAR(psr, flag) (psr &= ~(flag))
+#define ARM_PSR_IS_SET(psr, flag) (psr & flag)
+#define ARM_PSR_SET(psr, flag) (psr |= (flag))
+#define ARM_PSR_CLEAR(psr, flag) (psr &= ~(flag))
 
 #define OPCODE_REG(offset) ((opcode >> offset) & 0xfu)
 #define RM(opcode) OPCODE_REG(0)
@@ -78,40 +78,40 @@ static uint32_t ror_mask[32]
         0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff, 0x0fffffff, 0x1fffffff,
         0x3fffffff, 0x7fffffff };
 
-static bool evaluate_cond(arm7_condition_t cond, uint32_t cpsr)
+static bool evaluate_cond(arm_condition_t cond, uint32_t cpsr)
 {
     switch (cond) {
-        case ARM7_COND_EQ:
-            return ARM7_PSR_EQ(cpsr);
-        case ARM7_COND_NE:
-            return ARM7_PSR_NE(cpsr);
-        case ARM7_COND_CS:
-            return ARM7_PSR_CS(cpsr);
-        case ARM7_COND_CC:
-            return ARM7_PSR_CC(cpsr);
-        case ARM7_COND_MI:
-            return ARM7_PSR_MI(cpsr);
-        case ARM7_COND_PL:
-            return ARM7_PSR_PL(cpsr);
-        case ARM7_COND_VS:
-            return ARM7_PSR_VS(cpsr);
-        case ARM7_COND_VC:
-            return ARM7_PSR_VC(cpsr);
-        case ARM7_COND_HI:
-            return ARM7_PSR_CS(cpsr) && ARM7_PSR_NE(cpsr);
-        case ARM7_COND_LS:
-            return ARM7_PSR_CC(cpsr) || ARM7_PSR_EQ(cpsr);
-        case ARM7_COND_GE:
-            return ARM7_PSR_GE(cpsr);
-        case ARM7_COND_LT:
-            return ARM7_PSR_LT(cpsr);
-        case ARM7_COND_GT:
-            return ARM7_PSR_NE(cpsr) && ARM7_PSR_GE(cpsr);
-        case ARM7_COND_LE:
-            return ARM7_PSR_EQ(cpsr) || ARM7_PSR_LT(cpsr);
-        case ARM7_COND_AL:
+        case ARM_COND_EQ:
+            return ARM_PSR_EQ(cpsr);
+        case ARM_COND_NE:
+            return ARM_PSR_NE(cpsr);
+        case ARM_COND_CS:
+            return ARM_PSR_CS(cpsr);
+        case ARM_COND_CC:
+            return ARM_PSR_CC(cpsr);
+        case ARM_COND_MI:
+            return ARM_PSR_MI(cpsr);
+        case ARM_COND_PL:
+            return ARM_PSR_PL(cpsr);
+        case ARM_COND_VS:
+            return ARM_PSR_VS(cpsr);
+        case ARM_COND_VC:
+            return ARM_PSR_VC(cpsr);
+        case ARM_COND_HI:
+            return ARM_PSR_CS(cpsr) && ARM_PSR_NE(cpsr);
+        case ARM_COND_LS:
+            return ARM_PSR_CC(cpsr) || ARM_PSR_EQ(cpsr);
+        case ARM_COND_GE:
+            return ARM_PSR_GE(cpsr);
+        case ARM_COND_LT:
+            return ARM_PSR_LT(cpsr);
+        case ARM_COND_GT:
+            return ARM_PSR_NE(cpsr) && ARM_PSR_GE(cpsr);
+        case ARM_COND_LE:
+            return ARM_PSR_EQ(cpsr) || ARM_PSR_LT(cpsr);
+        case ARM_COND_AL:
             return true;
-        case ARM7_COND_RS:
+        case ARM_COND_RS:
         default:
             abort();
     }
@@ -211,40 +211,40 @@ static instr_t instr[0xfff] = {
     /* 0x010 */
 };
 
-void arm7_init(void)
+void arm_init(void)
 {
     memset(&arm, 0, sizeof(arm));
-    arm7_reset();
+    arm_reset();
 }
 
-void arm7_reset(void)
+void arm_reset(void)
 {
     arm.r14_svc = arm.r[PC];
     arm.spsr_svc = arm.cpsr;
-    arm.cpsr = ARM7_PSR_IRQ_DISABLE | ARM7_PSR_FIQ_DISABLE | ARM7_PSR_SVC_MODE;
+    arm.cpsr = ARM_PSR_IRQ_DISABLE | ARM_PSR_FIQ_DISABLE | ARM_PSR_SVC_MODE;
     arm.r[PC] = 0;
 }
 
-static uint32_t arm7_fetch(void)
+static uint32_t arm_fetch(void)
 {
     uint32_t pc = arm.r[PC];
-    uint32_t addr = arm.cpsr & ARM7_PSR_STATE_BIT ? pc >> 1 : pc >> 2;
+    uint32_t addr = arm.cpsr & ARM_PSR_STATE_BIT ? pc >> 1 : pc >> 2;
     return mmu_read_word(addr);
 }
 
-static void arm7_execute(void)
+static void arm_execute(void)
 {
-    uint32_t opcode = arm7_fetch();
+    uint32_t opcode = arm_fetch();
     if (evaluate_cond(opcode >> 28, arm.cpsr)) {
         uint32_t code = ((opcode >> 16) & 0xff0) | ((opcode >> 4) & 0x0f);
 #ifdef CPU_DEBUG
-        arm7_debug(opcode);
+        arm_debug(opcode);
 #endif
         instr[code](opcode);
     }
 }
 
-void arm7_step(void)
+void arm_step(void)
 {
-    arm7_execute();
+    arm_execute();
 }

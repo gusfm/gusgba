@@ -7,8 +7,8 @@ set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -std=gnu11 -O2 -fno-strict-aliasing
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 add_executable(gusgba
-    src/arm7.c
-    src/arm7_debug.c
+    src/arm.c
+    src/arm_debug.c
     src/mmu.c
     src/main.c
 )
@@ -17,7 +17,7 @@ add_library(asbase SHARED
     src/asm/str.c
     src/asm/token.c
     src/asm/lex.c
-    src/asm/arm7_enc.c
+    src/asm/arm_enc.c
     src/asm/parser.c
     )
 
@@ -26,9 +26,9 @@ enable_testing()
 include_directories(${PROJECT_SOURCE_DIR}/test)
 
 add_executable(gusgbatest
-    src/arm7.c
-    src/arm7_debug.c
-    test/arm7_test.c
+    src/arm.c
+    src/arm_debug.c
+    test/arm_test.c
     test/asm/asm.c
     test/asm/lex_test.c
     test/asm/parser_test.c

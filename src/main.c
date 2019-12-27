@@ -1,8 +1,8 @@
-#include "arm7.h"
+#include "arm.h"
 
 int main(void)
 {
-    arm7_init();
-    arm7_step();
+    arm_init();
+    arm_step();
     return 0;
 }

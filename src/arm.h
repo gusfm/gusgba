@@ -1,5 +1,5 @@
-#ifndef ARM7_H
-#define ARM7_H
+#ifndef ARM_H
+#define ARM_H
 
 #include <stdint.h>
 
@@ -28,9 +28,9 @@ typedef struct {
     uint32_t spsr_abt;
     uint32_t spsr_irq;
     uint32_t spsr_und;
-} arm7_t;
+} arm_t;
 
-extern arm7_t arm;
+extern arm_t arm;
 
 /* Registers */
 #define R0 0
@@ -47,25 +47,25 @@ extern arm7_t arm;
 #define PC 15
 
 /* Control bits */
-#define ARM7_PSR_USR_MODE (0x10)
-#define ARM7_PSR_FIQ_MODE (0x11)
-#define ARM7_PSR_IRQ_MODE (0x12)
-#define ARM7_PSR_SVC_MODE (0x13)
-#define ARM7_PSR_ABT_MODE (0x17)
-#define ARM7_PSR_UND_MODE (0x1b)
-#define ARM7_PSR_SYS_MODE (0x1f)
-#define ARM7_PSR_STATE_BIT (1u << 5)
-#define ARM7_PSR_FIQ_DISABLE (1u << 6)
-#define ARM7_PSR_IRQ_DISABLE (1u << 7)
+#define ARM_PSR_USR_MODE (0x10)
+#define ARM_PSR_FIQ_MODE (0x11)
+#define ARM_PSR_IRQ_MODE (0x12)
+#define ARM_PSR_SVC_MODE (0x13)
+#define ARM_PSR_ABT_MODE (0x17)
+#define ARM_PSR_UND_MODE (0x1b)
+#define ARM_PSR_SYS_MODE (0x1f)
+#define ARM_PSR_STATE_BIT (1u << 5)
+#define ARM_PSR_FIQ_DISABLE (1u << 6)
+#define ARM_PSR_IRQ_DISABLE (1u << 7)
 
 /* Condition code flags */
-#define ARM7_PSR_OVERFLOW (1u << 28)
-#define ARM7_PSR_CARRY (1u << 29)
-#define ARM7_PSR_ZERO (1u << 30)
-#define ARM7_PSR_NEGATIVE (1u << 31)
+#define ARM_PSR_OVERFLOW (1u << 28)
+#define ARM_PSR_CARRY (1u << 29)
+#define ARM_PSR_ZERO (1u << 30)
+#define ARM_PSR_NEGATIVE (1u << 31)
 
-void arm7_init(void);
-void arm7_reset(void);
-void arm7_step(void);
+void arm_init(void);
+void arm_reset(void);
+void arm_step(void);
 
-#endif /* !ARM7_H */
+#endif /* !ARM_H */
