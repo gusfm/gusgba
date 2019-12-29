@@ -4,14 +4,26 @@
 #define OPCODE_REG(offset) ((opcode >> offset) & 0xfu)
 #define RM(opcode) OPCODE_REG(0)
 #define RS(opcode) OPCODE_REG(8)
+
 #define OPER_DP_AND(func) \
-    (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode))
+    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode)
+
+#define OPER_DP_ANDS(func) \
+    do { \
+        arm.shift_carry = 0; \
+        uint32_t d = OPER_DP_AND(func); \
+        arm_psr_set_nzc(&arm.cpsr, d); \
+    } while (0)
 
 #define INSTR_DP_REG(op)                                                      \
     op##_lsl_imm, op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, op##_asr_imm,     \
         op##_asr_reg, op##_ror_imm, op##_ror_reg, op##_lsl_imm, op##_lsl_reg, \
         op##_lsr_imm, op##_lsr_reg, op##_asr_imm, op##_asr_reg, op##_ror_imm, \
-        op##_ror_reg
+        op##_ror_reg, op##s_lsl_imm, op##s_lsl_reg, op##s_lsr_imm,            \
+        op##s_lsr_reg, op##s_asr_imm, op##s_asr_reg, op##s_ror_imm,           \
+        op##s_ror_reg, op##s_lsl_imm, op##s_lsl_reg, op##s_lsr_imm,           \
+        op##s_lsr_reg, op##s_asr_imm, op##s_asr_reg, op##s_ror_imm,           \
+        op##s_ror_reg
 
 static uint32_t asr_mask[32] = {
     0xffffffff, 0x80000000, 0xc0000000, 0xe0000000, 0xf0000000, 0xf8000000,
@@ -29,75 +41,106 @@ static uint32_t ror_mask[32] = {
     0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff, 0x0fffffff, 0x1fffffff,
     0x3fffffff, 0x7fffffff};
 
+static inline void arm_psr_set_nzc(uint32_t *psr, uint32_t d)
+{
+    uint32_t n = d & ARM_PSR_NEGATIVE;
+    uint32_t z = !d << ARM_PSR_ZERO_SHIFT;
+    uint32_t c = arm.shift_carry << ARM_PSR_CARRY_SHIFT;
+    *psr = n | z | c | (*psr & 0x1fffffff);
+}
+
+static inline uint32_t dp_lsl(uint32_t opcode, uint32_t shift)
+{
+    uint32_t val = arm.r[RM(opcode)];
+    shift &= 0x1f;
+    if (!shift) {
+        arm.shift_carry = ARM_PSR_CS(arm.cpsr);
+        return val;
+    } else {
+        arm.shift_carry = (val >> (32 - shift)) & 1;
+        return val << shift;
+    }
+}
+
+static inline uint32_t dp_lsr(uint32_t opcode, uint32_t shift)
+{
+    uint32_t val = arm.r[RM(opcode)];
+    shift &= 0x1f;
+    if (!shift) {
+        arm.shift_carry = val >> 31;
+        return 0;
+    } else {
+        arm.shift_carry = (val >> (shift - 1)) & 1;
+        return val >> shift;
+    }
+}
+
+static inline uint32_t dp_asr(uint32_t opcode, uint32_t shift)
+{
+    uint32_t val = arm.r[RM(opcode)];
+    shift &= 0x1f;
+    uint32_t ret = val >> shift;
+    if (val & 0x80000000)
+        ret |= asr_mask[shift];
+    arm.shift_carry = val >> 31;
+    return ret;
+}
+
+static inline uint32_t dp_ror(uint32_t opcode, uint32_t shift)
+{
+    uint32_t val = arm.r[RM(opcode)];
+    shift &= 0x1f;
+    uint32_t carry = val & ror_mask[shift];
+    arm.shift_carry = (val >> (shift - 1)) & 1;
+    return (carry << (32 - shift)) | (val >> shift);
+}
+
 /* Data processing logical shift left immediate */
 static inline uint32_t dp_lsl_imm(uint32_t opcode)
 {
-    uint32_t shift = (opcode >> 7) & 0x1f;
-    return arm.r[RM(opcode)] << shift;
+    return dp_lsl(opcode, opcode >> 7);
 }
 
 /* Data processing logical shift right immediate */
 static inline uint32_t dp_lsr_imm(uint32_t opcode)
 {
-    uint32_t shift = (opcode >> 7) & 0x1f;
-    if (!shift) {
-        return 0;
-    }
-    return arm.r[RM(opcode)] >> shift;
+    return dp_lsr(opcode, opcode >> 7);
 }
 
 /* Data processing arithmetic shift right immediate */
 static inline uint32_t dp_asr_imm(uint32_t opcode)
 {
-    uint32_t shift = (opcode >> 7) & 0x1f;
-    uint32_t val = arm.r[RM(opcode)];
-    uint32_t ret = val >> shift;
-    if (val & 0x80000000)
-        ret |= asr_mask[shift];
-    return ret;
+    return dp_asr(opcode, opcode >> 7);
 }
 
 /* Data processing rotate right immediate */
 static inline uint32_t dp_ror_imm(uint32_t opcode)
 {
-    uint32_t shift = (opcode >> 7) & 0x1f;
-    uint32_t val = arm.r[RM(opcode)];
-    uint32_t carry = val & ror_mask[shift];
-    return (carry << (32 - shift)) | (val >> shift);
+    return dp_ror(opcode, opcode >> 7);
 }
 
 /* Data processing logical shift left reg */
 static inline uint32_t dp_lsl_reg(uint32_t opcode)
 {
-    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
-    return arm.r[RM(opcode)] << shift;
+    return dp_lsl(opcode, arm.r[RS(opcode)]);
 }
 
 /* Data processing logical shift right reg */
 static inline uint32_t dp_lsr_reg(uint32_t opcode)
 {
-    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
-    return arm.r[RM(opcode)] >> shift;
+    return dp_lsr(opcode, arm.r[RS(opcode)]);
 }
 
 /* Data processing arithmetic shift right reg */
 static inline uint32_t dp_asr_reg(uint32_t opcode)
 {
-    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
-    uint32_t val = arm.r[RM(opcode)];
-    uint32_t ret = val >> shift;
-    if (val & 0x80000000)
-        ret |= asr_mask[shift];
-    return ret;
+    return dp_asr(opcode, arm.r[RS(opcode)]);
 }
 
 /* Data processing rotate right reg */
 static inline uint32_t dp_ror_reg(uint32_t opcode)
 {
-    uint32_t shift = (arm.r[RS(opcode)] & 0x1f);
-    uint32_t val = arm.r[RM(opcode)];
-    uint32_t carry = val & ror_mask[shift];
-    return (carry << (32 - shift)) | (val >> shift);
+    return dp_ror(opcode, arm.r[RS(opcode)]);
 }
 
 /* clang-format off */
@@ -118,11 +161,26 @@ static void and_lsr_reg(uint32_t opcode) { OPER_DP_AND(dp_lsr_reg); }
 static void and_asr_reg(uint32_t opcode) { OPER_DP_AND(dp_asr_reg); }
 /* AND Rd, Rn, Rm, ROR Rs */
 static void and_ror_reg(uint32_t opcode) { OPER_DP_AND(dp_ror_reg); }
+/* ANDS Rd, Rn, Rm, LSL # */
+static void ands_lsl_imm(uint32_t opcode) { OPER_DP_ANDS(dp_lsl_imm); }
+/* ANDS Rd, Rn, Rm, LSR # */
+static void ands_lsr_imm(uint32_t opcode) { OPER_DP_ANDS(dp_lsr_imm); }
+/* ANDS Rd, Rn, Rm, ASR # */
+static void ands_asr_imm(uint32_t opcode) { OPER_DP_ANDS(dp_asr_imm); }
+/* ANDS Rd, Rn, Rm, ROR # */
+static void ands_ror_imm(uint32_t opcode) { OPER_DP_ANDS(dp_ror_imm); }
+/* ANDS Rd, Rn, Rm, LSL Rs */
+static void ands_lsl_reg(uint32_t opcode) { OPER_DP_ANDS(dp_lsl_reg); }
+/* ANDS Rd, Rn, Rm, LSR Rs */
+static void ands_lsr_reg(uint32_t opcode) { OPER_DP_ANDS(dp_lsr_reg); }
+/* ANDS Rd, Rn, Rm, ASR Rs */
+static void ands_asr_reg(uint32_t opcode) { OPER_DP_ANDS(dp_asr_reg); }
+/* ANDS Rd, Rn, Rm, ROR Rs */
+static void ands_ror_reg(uint32_t opcode) { OPER_DP_ANDS(dp_ror_reg); }
 
 /* clang-format on */
 
 arm_instr_t arm_instr[0xfff] = {
-    /* 0x000 */
+    /* 0x000 - 0x01f */
     INSTR_DP_REG(and)
-    /* 0x010 */
 };

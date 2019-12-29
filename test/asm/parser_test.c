@@ -72,6 +72,13 @@ static int dp_and(void)
     ASSERT(asm_test("and r0, r1, #0xff00", 0xe2010cff) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, #0xff0000", 0xe20108ff) == PARSER_OK);
     ASSERT(asm_test("and r0, r1, #0xff000000", 0xe20104ff) == PARSER_OK);
+    /* ANDS */
+    ASSERT(asm_test("ands r0, r1, r2", 0xe0110002) == PARSER_OK);
+    ASSERT(asm_test("ands r0, r1, r2, lsl #1", 0xe0110082) == PARSER_OK);
+    ASSERT(asm_test("ands r0, r1, r2, lsr #1", 0xe01100a2) == PARSER_OK);
+    ASSERT(asm_test("ands r0, r1, r2, asr #1", 0xe01100c2) == PARSER_OK);
+    ASSERT(asm_test("ands r0, r1, r2, rrx", 0xe0110062) == PARSER_OK);
+    ASSERT(asm_test("ands r0, r1, #0", 0xe2110000) == PARSER_OK);
     return 0;
 }
 

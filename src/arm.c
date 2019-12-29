@@ -34,21 +34,6 @@ typedef enum {
     ARM_COND_RS, /* reserved */
 } arm_condition_t;
 
-#define ARM_PSR_EQ(psr) (psr & ARM_PSR_ZERO)
-#define ARM_PSR_NE(psr) !(psr & ARM_PSR_ZERO)
-#define ARM_PSR_CS(psr) (psr & ARM_PSR_CARRY)
-#define ARM_PSR_CC(psr) !(psr & ARM_PSR_CARRY)
-#define ARM_PSR_MI(psr) (psr & ARM_PSR_NEGATIVE)
-#define ARM_PSR_PL(psr) !(psr & ARM_PSR_NEGATIVE)
-#define ARM_PSR_VS(psr) (psr & ARM_PSR_OVERFLOW)
-#define ARM_PSR_VC(psr) !(psr & ARM_PSR_OVERFLOW)
-#define ARM_PSR_GE(psr) (ARM_PSR_MI(psr) == ARM_PSR_VS(psr))
-#define ARM_PSR_LT(psr) (ARM_PSR_MI(psr) != ARM_PSR_VS(psr))
-
-#define ARM_PSR_IS_SET(psr, flag) (psr & flag)
-#define ARM_PSR_SET(psr, flag) (psr |= (flag))
-#define ARM_PSR_CLEAR(psr, flag) (psr &= ~(flag))
-
 static bool evaluate_cond(arm_condition_t cond, uint32_t cpsr)
 {
     switch (cond) {

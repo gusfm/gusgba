@@ -63,6 +63,7 @@ static void arm_debug_dp(uint32_t opcode)
 {
     const char *code = arm_debug_dp_get_code(opcode);
     const char *shift_tp = shift_type(opcode);
+    const char *s = opcode & 0x100000 ? "s" : "";
     uint32_t rd = (opcode >> 12) & 0xf;
     uint32_t rn = (opcode >> 16) & 0xf;
     uint32_t rm = opcode & 0xf;
@@ -80,11 +81,11 @@ static void arm_debug_dp(uint32_t opcode)
             snprintf(operand2, sizeof(operand2), "r%u, %s #%u\n", rm, shift_tp,
                      shift);
     }
-    printf("%s r%u, r%u, %s", code, rd, rn, operand2);
+    printf("%s%s r%u, r%u, %s", code, s, rd, rn, operand2);
 }
 
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
-    [0 ... 0xf] = arm_debug_dp,
+    [0 ... 0x1f] = arm_debug_dp,
 };
 
 void arm_debug(uint32_t opcode)

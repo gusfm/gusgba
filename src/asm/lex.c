@@ -17,6 +17,7 @@ static struct keyword {
     { "adc", TOKEN_KW_ADC },
     { "add", TOKEN_KW_ADD },
     { "and", TOKEN_KW_AND },
+    { "ands", TOKEN_KW_ANDS },
     { "asl", TOKEN_KW_ASL },
     { "asr", TOKEN_KW_ASR },
     { "bic", TOKEN_KW_BIC },

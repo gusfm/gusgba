@@ -28,6 +28,8 @@ typedef struct {
     uint32_t spsr_abt;
     uint32_t spsr_irq;
     uint32_t spsr_und;
+    /* Internal variables */
+    uint32_t shift_carry;
 } arm_t;
 
 extern arm_t arm;
@@ -59,10 +61,30 @@ extern arm_t arm;
 #define ARM_PSR_IRQ_DISABLE (1u << 7)
 
 /* Condition code flags */
-#define ARM_PSR_OVERFLOW (1u << 28)
-#define ARM_PSR_CARRY (1u << 29)
-#define ARM_PSR_ZERO (1u << 30)
-#define ARM_PSR_NEGATIVE (1u << 31)
+#define ARM_PSR_OVERFLOW_SHIFT 28
+#define ARM_PSR_CARRY_SHIFT 29
+#define ARM_PSR_ZERO_SHIFT 30
+#define ARM_PSR_NEGATIVE_SHIFT 31
+
+#define ARM_PSR_OVERFLOW (1u << ARM_PSR_OVERFLOW_SHIFT)
+#define ARM_PSR_CARRY (1u << ARM_PSR_CARRY_SHIFT)
+#define ARM_PSR_ZERO (1u << ARM_PSR_ZERO_SHIFT)
+#define ARM_PSR_NEGATIVE (1u << ARM_PSR_NEGATIVE_SHIFT)
+
+/* PSR flags */
+#define ARM_PSR_EQ(psr) (psr & ARM_PSR_ZERO)
+#define ARM_PSR_NE(psr) !(psr & ARM_PSR_ZERO)
+#define ARM_PSR_CS(psr) (psr & ARM_PSR_CARRY)
+#define ARM_PSR_CC(psr) !(psr & ARM_PSR_CARRY)
+#define ARM_PSR_MI(psr) (psr & ARM_PSR_NEGATIVE)
+#define ARM_PSR_PL(psr) !(psr & ARM_PSR_NEGATIVE)
+#define ARM_PSR_VS(psr) (psr & ARM_PSR_OVERFLOW)
+#define ARM_PSR_VC(psr) !(psr & ARM_PSR_OVERFLOW)
+#define ARM_PSR_GE(psr) (ARM_PSR_MI(psr) == ARM_PSR_VS(psr))
+#define ARM_PSR_LT(psr) (ARM_PSR_MI(psr) != ARM_PSR_VS(psr))
+#define ARM_PSR_IS_SET(psr, flag) (psr & flag)
+#define ARM_PSR_SET(psr, flag) (psr |= (flag))
+#define ARM_PSR_CLEAR(psr, flag) (psr &= ~(flag))
 
 void arm_init(void);
 void arm_reset(void);
