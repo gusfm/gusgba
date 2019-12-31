@@ -6,11 +6,13 @@
 
 /* Data processing operations. */
 #define DP_OPER_AND(func) \
-    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode)
+    (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode))
 #define DP_OPER_EOR(func) \
-    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode)
+    (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode))
 #define DP_OPER_SUB(func) \
-    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] - func(opcode)
+    (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] - func(opcode))
+#define DP_OPER_RSB(func) \
+    (arm.r[OPCODE_REG(12)] = func(opcode) - arm.r[OPCODE_REG(16)])
 
 /* Set condition codes for data processing operation. */
 #define DP_OPER_CC(val)                  \
@@ -246,6 +248,39 @@ static void subs_lsr_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_SUB(dp_lsr_reg));
 static void subs_asr_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_SUB(dp_asr_reg)); }
 /* SUBS Rd, Rn, Rm, ROR Rs */
 static void subs_ror_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_SUB(dp_ror_reg)); }
+/* RSB Rd, Rn, Rm, LSL # */
+static void rsb_lsl_imm(uint32_t opcode) { DP_OPER_RSB(dp_lsl_imm); }
+/* RSB Rd, Rn, Rm, LSR # */
+static void rsb_lsr_imm(uint32_t opcode) { DP_OPER_RSB(dp_lsr_imm); }
+/* RSB Rd, Rn, Rm, ASR # */
+static void rsb_asr_imm(uint32_t opcode) { DP_OPER_RSB(dp_asr_imm); }
+/* RSB Rd, Rn, Rm, ROR # */
+static void rsb_ror_imm(uint32_t opcode) { DP_OPER_RSB(dp_ror_imm); }
+/* RSB Rd, Rn, Rm, LSL Rs */
+static void rsb_lsl_reg(uint32_t opcode) { DP_OPER_RSB(dp_lsl_reg); }
+/* RSB Rd, Rn, Rm, LSR Rs */
+static void rsb_lsr_reg(uint32_t opcode) { DP_OPER_RSB(dp_lsr_reg); }
+/* RSB Rd, Rn, Rm, ASR Rs */
+static void rsb_asr_reg(uint32_t opcode) { DP_OPER_RSB(dp_asr_reg); }
+/* RSB Rd, Rn, Rm, ROR Rs */
+static void rsb_ror_reg(uint32_t opcode) { DP_OPER_RSB(dp_ror_reg); }
+/* RSBS Rd, Rn, Rm, LSL # */
+static void rsbs_lsl_imm(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_lsl_imm)); }
+/* RSBS Rd, Rn, Rm, LSR # */
+static void rsbs_lsr_imm(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_lsr_imm)); }
+/* RSBS Rd, Rn, Rm, ASR # */
+static void rsbs_asr_imm(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_asr_imm)); }
+/* RSBS Rd, Rn, Rm, ROR # */
+static void rsbs_ror_imm(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_ror_imm)); }
+/* RSBS Rd, Rn, Rm, LSL Rs */
+static void rsbs_lsl_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_lsl_reg)); }
+/* RSBS Rd, Rn, Rm, LSR Rs */
+static void rsbs_lsr_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_lsr_reg)); }
+/* RSBS Rd, Rn, Rm, ASR Rs */
+static void rsbs_asr_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_asr_reg)); }
+/* RSBS Rd, Rn, Rm, ROR Rs */
+static void rsbs_ror_reg(uint32_t opcode) { DP_OPER_CC(DP_OPER_RSB(dp_ror_reg)); }
+
 /* clang-format on */
 
 arm_instr_t arm_instr[0xfff] = {
@@ -255,4 +290,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG(eor),
     /* 0x040 */
     INSTR_DP_REG(sub),
+    /* 0x060 */
+    INSTR_DP_REG(rsb),
 };

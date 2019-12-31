@@ -86,6 +86,9 @@ static int arm_and_test(void)
 
 static int arm_eor_test(void)
 {
+    arm.cpsr = default_flags;
+    ASSERT(test_arm_rd("eor r0, r0, r0", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("eor r0, r1, r8", R0, 0xfffffffe, 0) == 0);
     ASSERT(test_arm_rd("eors r0, r0, r0", R0, 0x00000000, Z) == 0);
     ASSERT(test_arm_rd("eors r0, r0, r1", R0, 0x00000001, 0) == 0);
     ASSERT(test_arm_rd("eors r0, r1, r2", R0, 0x00000003, 0) == 0);
@@ -95,10 +98,25 @@ static int arm_eor_test(void)
 
 static int arm_sub_test(void)
 {
+    arm.cpsr = default_flags;
+    ASSERT(test_arm_rd("sub r0, r0, r0", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("sub r0, r1, r2", R0, 0xffffffff, 0) == 0);
     ASSERT(test_arm_rd("subs r0, r0, r0", R0, 0x00000000, Z) == 0);
     ASSERT(test_arm_rd("subs r0, r1, r0", R0, 0x00000001, 0) == 0);
     ASSERT(test_arm_rd("subs r0, r2, r1", R0, 0x00000001, 0) == 0);
     ASSERT(test_arm_rd("subs r0, r1, r2", R0, 0xffffffff, N) == 0);
+    return 0;
+}
+
+static int arm_rsb_test(void)
+{
+    arm.cpsr = default_flags;
+    ASSERT(test_arm_rd("rsb r0, r0, r0", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("rsb r0, r2, r1", R0, 0xffffffff, 0) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r0, r0", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r0, r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r1, r2", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r2, r1", R0, 0xffffffff, N) == 0);
     return 0;
 }
 
@@ -117,4 +135,5 @@ void arm_test(void)
     ut_run(arm_and_test);
     ut_run(arm_eor_test);
     ut_run(arm_sub_test);
+    ut_run(arm_rsb_test);
 }
