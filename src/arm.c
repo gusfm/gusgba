@@ -34,37 +34,37 @@ typedef enum {
     ARM_COND_RS, /* reserved */
 } arm_condition_t;
 
-static bool evaluate_cond(arm_condition_t cond, uint32_t cpsr)
+static bool evaluate_cond(arm_condition_t cond, arm_psr_t cpsr)
 {
     switch (cond) {
         case ARM_COND_EQ:
-            return ARM_PSR_EQ(cpsr);
+            return cpsr.z;
         case ARM_COND_NE:
-            return ARM_PSR_NE(cpsr);
+            return !cpsr.z;
         case ARM_COND_CS:
-            return ARM_PSR_CS(cpsr);
+            return cpsr.c;
         case ARM_COND_CC:
-            return ARM_PSR_CC(cpsr);
+            return !cpsr.c;
         case ARM_COND_MI:
-            return ARM_PSR_MI(cpsr);
+            return cpsr.n;
         case ARM_COND_PL:
-            return ARM_PSR_PL(cpsr);
+            return !cpsr.n;
         case ARM_COND_VS:
-            return ARM_PSR_VS(cpsr);
+            return cpsr.v;
         case ARM_COND_VC:
-            return ARM_PSR_VC(cpsr);
+            return !cpsr.v;
         case ARM_COND_HI:
-            return ARM_PSR_CS(cpsr) && ARM_PSR_NE(cpsr);
+            return cpsr.c && !cpsr.z;
         case ARM_COND_LS:
-            return ARM_PSR_CC(cpsr) || ARM_PSR_EQ(cpsr);
+            return !cpsr.c || cpsr.z;
         case ARM_COND_GE:
-            return ARM_PSR_GE(cpsr);
+            return cpsr.n == cpsr.v;
         case ARM_COND_LT:
-            return ARM_PSR_LT(cpsr);
+            return cpsr.n != cpsr.v;
         case ARM_COND_GT:
-            return ARM_PSR_NE(cpsr) && ARM_PSR_GE(cpsr);
+            return !cpsr.z && cpsr.n == cpsr.v;
         case ARM_COND_LE:
-            return ARM_PSR_EQ(cpsr) || ARM_PSR_LT(cpsr);
+            return cpsr.z || cpsr.n != cpsr.v;
         case ARM_COND_AL:
             return true;
         case ARM_COND_RS:
@@ -83,14 +83,14 @@ void arm_reset(void)
 {
     arm.r14_svc = arm.r[PC];
     arm.spsr_svc = arm.cpsr;
-    arm.cpsr = ARM_PSR_IRQ_DISABLE | ARM_PSR_FIQ_DISABLE | ARM_PSR_SVC_MODE;
+    arm.cpsr.psr = ARM_PSR_IRQ_DISABLE | ARM_PSR_FIQ_DISABLE | ARM_PSR_SVC_MODE;
     arm.r[PC] = 0;
 }
 
 static uint32_t arm_fetch(void)
 {
     uint32_t pc = arm.r[PC];
-    uint32_t addr = arm.cpsr & ARM_PSR_STATE_BIT ? pc >> 1 : pc >> 2;
+    uint32_t addr = arm.cpsr.t ? pc >> 1 : pc >> 2;
     return mmu_read_word(addr);
 }
 

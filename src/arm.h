@@ -3,6 +3,21 @@
 
 #include <stdint.h>
 
+typedef union {
+    struct {
+        unsigned int mode : 5;
+        unsigned int t : 1;
+        unsigned int f : 1;
+        unsigned int i : 1;
+        unsigned int reserved : 20;
+        unsigned int v : 1;
+        unsigned int c : 1;
+        unsigned int z : 1;
+        unsigned int n : 1;
+    };
+    uint32_t psr;
+} arm_psr_t;
+
 typedef struct {
     /* ARM-state general registers */
     uint32_t r[16];
@@ -22,12 +37,12 @@ typedef struct {
     uint32_t r13_und;
     uint32_t r14_und;
     /* ARM-state program status registers */
-    uint32_t cpsr;
-    uint32_t spsr_fiq;
-    uint32_t spsr_svc;
-    uint32_t spsr_abt;
-    uint32_t spsr_irq;
-    uint32_t spsr_und;
+    arm_psr_t cpsr;
+    arm_psr_t spsr_fiq;
+    arm_psr_t spsr_svc;
+    arm_psr_t spsr_abt;
+    arm_psr_t spsr_irq;
+    arm_psr_t spsr_und;
     /* Internal variables */
     uint32_t shift_carry;
 } arm_t;
@@ -60,7 +75,7 @@ extern arm_t arm;
 #define ARM_PSR_FIQ_DISABLE (1u << 6)
 #define ARM_PSR_IRQ_DISABLE (1u << 7)
 
-/* Condition code flags */
+/* PSR condition code bits */
 #define ARM_PSR_OVERFLOW_SHIFT 28
 #define ARM_PSR_CARRY_SHIFT 29
 #define ARM_PSR_ZERO_SHIFT 30
@@ -70,21 +85,6 @@ extern arm_t arm;
 #define ARM_PSR_CARRY (1u << ARM_PSR_CARRY_SHIFT)
 #define ARM_PSR_ZERO (1u << ARM_PSR_ZERO_SHIFT)
 #define ARM_PSR_NEGATIVE (1u << ARM_PSR_NEGATIVE_SHIFT)
-
-/* PSR flags */
-#define ARM_PSR_EQ(psr) (psr & ARM_PSR_ZERO)
-#define ARM_PSR_NE(psr) !(psr & ARM_PSR_ZERO)
-#define ARM_PSR_CS(psr) (psr & ARM_PSR_CARRY)
-#define ARM_PSR_CC(psr) !(psr & ARM_PSR_CARRY)
-#define ARM_PSR_MI(psr) (psr & ARM_PSR_NEGATIVE)
-#define ARM_PSR_PL(psr) !(psr & ARM_PSR_NEGATIVE)
-#define ARM_PSR_VS(psr) (psr & ARM_PSR_OVERFLOW)
-#define ARM_PSR_VC(psr) !(psr & ARM_PSR_OVERFLOW)
-#define ARM_PSR_GE(psr) (ARM_PSR_MI(psr) == ARM_PSR_VS(psr))
-#define ARM_PSR_LT(psr) (ARM_PSR_MI(psr) != ARM_PSR_VS(psr))
-#define ARM_PSR_IS_SET(psr, flag) (psr & flag)
-#define ARM_PSR_SET(psr, flag) (psr |= (flag))
-#define ARM_PSR_CLEAR(psr, flag) (psr &= ~(flag))
 
 void arm_init(void);
 void arm_reset(void);

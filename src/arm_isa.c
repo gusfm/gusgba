@@ -50,12 +50,12 @@ static uint32_t ror_mask[32] = {
     0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff, 0x0fffffff, 0x1fffffff,
     0x3fffffff, 0x7fffffff};
 
-static inline void arm_psr_set_nzc(uint32_t *psr, uint32_t d)
+static inline void arm_psr_set_nzc(arm_psr_t *psr, uint32_t d)
 {
     uint32_t n = d & ARM_PSR_NEGATIVE;
     uint32_t z = !d << ARM_PSR_ZERO_SHIFT;
     uint32_t c = arm.shift_carry << ARM_PSR_CARRY_SHIFT;
-    *psr = n | z | c | (*psr & 0x1fffffff);
+    psr->psr = n | z | c | (psr->psr & 0x1fffffff);
 }
 
 static inline uint32_t dp_lsl(uint32_t opcode, uint32_t shift)
@@ -63,7 +63,7 @@ static inline uint32_t dp_lsl(uint32_t opcode, uint32_t shift)
     uint32_t val = arm.r[opcode & 0xf];
     shift &= 0x1f;
     if (!shift) {
-        arm.shift_carry = ARM_PSR_CS(arm.cpsr);
+        arm.shift_carry = arm.cpsr.c;
         return val;
     } else {
         arm.shift_carry = (val >> (32 - shift)) & 1;

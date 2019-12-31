@@ -34,11 +34,19 @@ uint16_t mmu_read_half_word(uint32_t addr)
 
 static int test_arm_rd(const char *src, int rd, uint32_t rd_val, uint32_t flags)
 {
+    arm_psr_t f = { .psr = (flags | default_flags) };
     mem_pos = 0;
     asm_to_opcode(src, memory, sizeof(memory));
     arm_step();
     ASSERT_EQ(rd_val, arm.r[rd]);
-    ASSERT_EQ(flags | default_flags, arm.cpsr);
+    ASSERT_EQ(f.mode, arm.cpsr.mode);
+    ASSERT_EQ(f.t, arm.cpsr.t);
+    ASSERT_EQ(f.f, arm.cpsr.f);
+    ASSERT_EQ(f.i, arm.cpsr.i);
+    ASSERT_EQ(f.v, arm.cpsr.v);
+    ASSERT_EQ(f.c, arm.cpsr.c);
+    ASSERT_EQ(f.z, arm.cpsr.z);
+    ASSERT_EQ(f.n, arm.cpsr.n);
     return 0;
 }
 
@@ -86,7 +94,7 @@ static int arm_and_test(void)
 
 static int arm_eor_test(void)
 {
-    arm.cpsr = default_flags;
+    arm_reset();
     ASSERT(test_arm_rd("eor r0, r0, r0", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("eor r0, r1, r8", R0, 0xfffffffe, 0) == 0);
     ASSERT(test_arm_rd("eors r0, r0, r0", R0, 0x00000000, Z) == 0);
@@ -98,7 +106,7 @@ static int arm_eor_test(void)
 
 static int arm_sub_test(void)
 {
-    arm.cpsr = default_flags;
+    arm_reset();
     ASSERT(test_arm_rd("sub r0, r0, r0", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("sub r0, r1, r2", R0, 0xffffffff, 0) == 0);
     ASSERT(test_arm_rd("subs r0, r0, r0", R0, 0x00000000, Z) == 0);
@@ -110,7 +118,7 @@ static int arm_sub_test(void)
 
 static int arm_rsb_test(void)
 {
-    arm.cpsr = default_flags;
+    arm_reset();
     ASSERT(test_arm_rd("rsb r0, r0, r0", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("rsb r0, r2, r1", R0, 0xffffffff, 0) == 0);
     ASSERT(test_arm_rd("rsbs r0, r0, r0", R0, 0x00000000, Z) == 0);
@@ -122,7 +130,7 @@ static int arm_rsb_test(void)
 
 static int arm_add_test(void)
 {
-    arm.cpsr = default_flags;
+    arm_reset();
     ASSERT(test_arm_rd("add r0, r1, r8", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("add r0, r8, r8", R0, 0xfffffffe, 0) == 0);
     ASSERT(test_arm_rd("adds r0, r1, r1", R0, 0x00000002, 0) == 0);
