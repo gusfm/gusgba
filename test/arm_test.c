@@ -120,6 +120,17 @@ static int arm_rsb_test(void)
     return 0;
 }
 
+static int arm_add_test(void)
+{
+    arm.cpsr = default_flags;
+    ASSERT(test_arm_rd("add r0, r1, r8", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("add r0, r8, r8", R0, 0xfffffffe, 0) == 0);
+    ASSERT(test_arm_rd("adds r0, r1, r1", R0, 0x00000002, 0) == 0);
+    ASSERT(test_arm_rd("adds r0, r1, r8", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("adds r0, r8, r8", R0, 0xfffffffe, N) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -136,4 +147,5 @@ void arm_test(void)
     ut_run(arm_eor_test);
     ut_run(arm_sub_test);
     ut_run(arm_rsb_test);
+    ut_run(arm_add_test);
 }

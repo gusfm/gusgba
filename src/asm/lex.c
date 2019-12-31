@@ -16,6 +16,7 @@ static struct keyword {
 } keywords[] = {
     { "adc", TOKEN_KW_ADC },
     { "add", TOKEN_KW_ADD },
+    { "adds", TOKEN_KW_ADDS },
     { "and", TOKEN_KW_AND },
     { "ands", TOKEN_KW_ANDS },
     { "asl", TOKEN_KW_ASL },
