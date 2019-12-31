@@ -45,53 +45,51 @@ static int test_arm_rd(const char *src, int rd, uint32_t rd_val, uint32_t flags)
 static int arm_and_test(void)
 {
     /* basic */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r0, r0", R0, 0x00000000, Z));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r1, r3", R0, 0x00000001, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r4, r5", R0, 0x00000004, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r7, r8", R0, 0x00000007, 0));
+    ASSERT(test_arm_rd("ands r0, r0, r0", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("ands r0, r1, r3", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r4, r5", R0, 0x00000004, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r7, r8", R0, 0x00000007, 0) == 0);
     /* LSL imm */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r2, r1, lsl #1", R0, 0x00000002, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r1, lsl #31", R0, 0x80000000, N));
+    ASSERT(test_arm_rd("ands r0, r2, r1, lsl #1", R0, 0x00000002, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r1, lsl #31", R0, 0x80000000, N) == 0);
     /* LSR imm */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r1, r2, lsr #1", R0, 0x00000001, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r3, r4, lsr #1", R0, 0x00000002, 0));
-    ASSERT_EQ(0,
-              test_arm_rd("ands r0, r8, r8, lsr #32", R0, 0x00000000, Z | C));
+    ASSERT(test_arm_rd("ands r0, r1, r2, lsr #1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r3, r4, lsr #1", R0, 0x00000002, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r8, lsr #32", R0, 0x00000000, Z | C) == 0);
     /* ASR imm */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, asr #1", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r7, r8, asr #31", R0, 0x00000007, C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r9, r9, asr #1", R0, 0x3fffffff, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r9, asr #31", R0, 0x00000000, Z));
+    ASSERT(test_arm_rd("ands r0, r8, r8, asr #1", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r7, r8, asr #31", R0, 0x00000007, C) == 0);
+    ASSERT(test_arm_rd("ands r0, r9, r9, asr #1", R0, 0x3fffffff, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r9, asr #31", R0, 0x00000000, Z) == 0);
     /* ROR imm */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, ror #1", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0,
-              test_arm_rd("ands r0, r8, r8, ror #31", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r7, ror #4", R0, 0x70000000, 0));
+    ASSERT(test_arm_rd("ands r0, r8, r8, ror #1", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r8, ror #31", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r7, ror #4", R0, 0x70000000, 0) == 0);
     /* LSL reg */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r2, r1, lsl r1", R0, 0x00000002, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r1, lsl r3", R0, 0x00000008, 0));
+    ASSERT(test_arm_rd("ands r0, r2, r1, lsl r1", R0, 0x00000002, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r1, lsl r3", R0, 0x00000008, 0) == 0);
     /* LSR reg */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r1, r2, lsr r1", R0, 0x00000001, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r3, r4, lsr r1", R0, 0x00000002, 0));
+    ASSERT(test_arm_rd("ands r0, r1, r2, lsr r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r3, r4, lsr r1", R0, 0x00000002, 0) == 0);
     /* ASR reg */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, asr r1", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r7, r8, asr r8", R0, 0x00000007, C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r9, r9, asr r1", R0, 0x3fffffff, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r9, asr r8", R0, 0x00000000, Z));
+    ASSERT(test_arm_rd("ands r0, r8, r8, asr r1", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r7, r8, asr r8", R0, 0x00000007, C) == 0);
+    ASSERT(test_arm_rd("ands r0, r9, r9, asr r1", R0, 0x3fffffff, 0) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r9, asr r8", R0, 0x00000000, Z) == 0);
     /* ROR reg */
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, ror r1", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, ror r8", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r7, ror r4", R0, 0x70000000, 0));
+    ASSERT(test_arm_rd("ands r0, r8, r8, ror r1", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r8, ror r8", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("ands r0, r8, r7, ror r4", R0, 0x70000000, 0) == 0);
 
     return 0;
 }
 
 static int arm_eor_test(void)
 {
-    ASSERT_EQ(0, test_arm_rd("eors r0, r0, r0", R0, 0x00000000, Z));
-    ASSERT_EQ(0, test_arm_rd("eors r0, r0, r1", R0, 0x00000001, 0));
-    ASSERT_EQ(0, test_arm_rd("eors r0, r1, r2", R0, 0x00000003, 0));
-    ASSERT_EQ(0, test_arm_rd("eors r0, r1, r8", R0, 0xfffffffe, N));
+    ASSERT(test_arm_rd("eors r0, r0, r0", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("eors r0, r0, r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("eors r0, r1, r2", R0, 0x00000003, 0) == 0);
+    ASSERT(test_arm_rd("eors r0, r1, r8", R0, 0xfffffffe, N) == 0);
     return 0;
 }
 

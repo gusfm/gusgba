@@ -2,8 +2,6 @@
 #include "arm.h"
 
 #define OPCODE_REG(offset) ((opcode >> offset) & 0xfu)
-#define RM(opcode) OPCODE_REG(0)
-#define RS(opcode) OPCODE_REG(8)
 
 #define OPER_DP_AND(func) \
     arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode)
@@ -61,7 +59,7 @@ static inline void arm_psr_set_nzc(uint32_t *psr, uint32_t d)
 
 static inline uint32_t dp_lsl(uint32_t opcode, uint32_t shift)
 {
-    uint32_t val = arm.r[RM(opcode)];
+    uint32_t val = arm.r[opcode & 0xf];
     shift &= 0x1f;
     if (!shift) {
         arm.shift_carry = ARM_PSR_CS(arm.cpsr);
@@ -74,7 +72,7 @@ static inline uint32_t dp_lsl(uint32_t opcode, uint32_t shift)
 
 static inline uint32_t dp_lsr(uint32_t opcode, uint32_t shift)
 {
-    uint32_t val = arm.r[RM(opcode)];
+    uint32_t val = arm.r[opcode & 0xf];
     shift &= 0x1f;
     if (!shift) {
         arm.shift_carry = val >> 31;
@@ -87,7 +85,7 @@ static inline uint32_t dp_lsr(uint32_t opcode, uint32_t shift)
 
 static inline uint32_t dp_asr(uint32_t opcode, uint32_t shift)
 {
-    uint32_t val = arm.r[RM(opcode)];
+    uint32_t val = arm.r[opcode & 0xf];
     shift &= 0x1f;
     uint32_t ret = val >> shift;
     if (val & 0x80000000)
@@ -98,7 +96,7 @@ static inline uint32_t dp_asr(uint32_t opcode, uint32_t shift)
 
 static inline uint32_t dp_ror(uint32_t opcode, uint32_t shift)
 {
-    uint32_t val = arm.r[RM(opcode)];
+    uint32_t val = arm.r[opcode & 0xf];
     shift &= 0x1f;
     uint32_t carry = val & ror_mask[shift];
     arm.shift_carry = (val >> (shift - 1)) & 1;
@@ -132,25 +130,25 @@ static inline uint32_t dp_ror_imm(uint32_t opcode)
 /* Data processing logical shift left reg */
 static inline uint32_t dp_lsl_reg(uint32_t opcode)
 {
-    return dp_lsl(opcode, arm.r[RS(opcode)]);
+    return dp_lsl(opcode, arm.r[(opcode >> 8) & 0xf]);
 }
 
 /* Data processing logical shift right reg */
 static inline uint32_t dp_lsr_reg(uint32_t opcode)
 {
-    return dp_lsr(opcode, arm.r[RS(opcode)]);
+    return dp_lsr(opcode, arm.r[(opcode >> 8) & 0xf]);
 }
 
 /* Data processing arithmetic shift right reg */
 static inline uint32_t dp_asr_reg(uint32_t opcode)
 {
-    return dp_asr(opcode, arm.r[RS(opcode)]);
+    return dp_asr(opcode, arm.r[(opcode >> 8) & 0xf]);
 }
 
 /* Data processing rotate right reg */
 static inline uint32_t dp_ror_reg(uint32_t opcode)
 {
-    return dp_ror(opcode, arm.r[RS(opcode)]);
+    return dp_ror(opcode, arm.r[(opcode >> 8) & 0xf]);
 }
 
 /* clang-format off */
