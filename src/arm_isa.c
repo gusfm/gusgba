@@ -5,9 +5,10 @@
 
 #define OPER_DP_AND(func) \
     arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode)
-
 #define OPER_DP_EOR(func) \
     arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode)
+#define OPER_DP_SUB(func) \
+    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] - func(opcode)
 
 #define OPER_DP_ANDS(func)              \
     do {                                \
@@ -20,6 +21,13 @@
     do {                                \
         arm.shift_carry = 0;            \
         uint32_t d = OPER_DP_EOR(func); \
+        arm_psr_set_nzc(&arm.cpsr, d);  \
+    } while (0)
+
+#define OPER_DP_SUBS(func)              \
+    do {                                \
+        arm.shift_carry = 0;            \
+        uint32_t d = OPER_DP_SUB(func); \
         arm_psr_set_nzc(&arm.cpsr, d);  \
     } while (0)
 
@@ -217,6 +225,38 @@ static void eors_lsr_reg(uint32_t opcode) { OPER_DP_EORS(dp_lsr_reg); }
 static void eors_asr_reg(uint32_t opcode) { OPER_DP_EORS(dp_asr_reg); }
 /* EORS Rd, Rn, Rm, ROR Rs */
 static void eors_ror_reg(uint32_t opcode) { OPER_DP_EORS(dp_ror_reg); }
+/* SUB Rd, Rn, Rm, LSL # */
+static void sub_lsl_imm(uint32_t opcode) { OPER_DP_SUB(dp_lsl_imm); }
+/* SUB Rd, Rn, Rm, LSR # */
+static void sub_lsr_imm(uint32_t opcode) { OPER_DP_SUB(dp_lsr_imm); }
+/* SUB Rd, Rn, Rm, ASR # */
+static void sub_asr_imm(uint32_t opcode) { OPER_DP_SUB(dp_asr_imm); }
+/* SUB Rd, Rn, Rm, ROR # */
+static void sub_ror_imm(uint32_t opcode) { OPER_DP_SUB(dp_ror_imm); }
+/* SUB Rd, Rn, Rm, LSL Rs */
+static void sub_lsl_reg(uint32_t opcode) { OPER_DP_SUB(dp_lsl_reg); }
+/* SUB Rd, Rn, Rm, LSR Rs */
+static void sub_lsr_reg(uint32_t opcode) { OPER_DP_SUB(dp_lsr_reg); }
+/* SUB Rd, Rn, Rm, ASR Rs */
+static void sub_asr_reg(uint32_t opcode) { OPER_DP_SUB(dp_asr_reg); }
+/* SUB Rd, Rn, Rm, ROR Rs */
+static void sub_ror_reg(uint32_t opcode) { OPER_DP_SUB(dp_ror_reg); }
+/* SUBS Rd, Rn, Rm, LSL # */
+static void subs_lsl_imm(uint32_t opcode) { OPER_DP_SUBS(dp_lsl_imm); }
+/* SUBS Rd, Rn, Rm, LSR # */
+static void subs_lsr_imm(uint32_t opcode) { OPER_DP_SUBS(dp_lsr_imm); }
+/* SUBS Rd, Rn, Rm, ASR # */
+static void subs_asr_imm(uint32_t opcode) { OPER_DP_SUBS(dp_asr_imm); }
+/* SUBS Rd, Rn, Rm, ROR # */
+static void subs_ror_imm(uint32_t opcode) { OPER_DP_SUBS(dp_ror_imm); }
+/* SUBS Rd, Rn, Rm, LSL Rs */
+static void subs_lsl_reg(uint32_t opcode) { OPER_DP_SUBS(dp_lsl_reg); }
+/* SUBS Rd, Rn, Rm, LSR Rs */
+static void subs_lsr_reg(uint32_t opcode) { OPER_DP_SUBS(dp_lsr_reg); }
+/* SUBS Rd, Rn, Rm, ASR Rs */
+static void subs_asr_reg(uint32_t opcode) { OPER_DP_SUBS(dp_asr_reg); }
+/* SUBS Rd, Rn, Rm, ROR Rs */
+static void subs_ror_reg(uint32_t opcode) { OPER_DP_SUBS(dp_ror_reg); }
 
 /* clang-format on */
 
@@ -225,4 +265,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG(and),
     /* 0x020 */
     INSTR_DP_REG(eor),
+    /* 0x040 */
+    INSTR_DP_REG(sub),
 };

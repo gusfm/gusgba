@@ -93,6 +93,15 @@ static int arm_eor_test(void)
     return 0;
 }
 
+static int arm_sub_test(void)
+{
+    ASSERT(test_arm_rd("subs r0, r0, r0", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("subs r0, r1, r0", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("subs r0, r2, r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("subs r0, r1, r2", R0, 0xffffffff, N) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -107,4 +116,5 @@ void arm_test(void)
     arm.r[9] = 0x7fffffff;
     ut_run(arm_and_test);
     ut_run(arm_eor_test);
+    ut_run(arm_sub_test);
 }

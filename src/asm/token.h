@@ -44,6 +44,7 @@ typedef enum {
     TOKEN_KW_RSC,
     TOKEN_KW_SBC,
     TOKEN_KW_SUB,
+    TOKEN_KW_SUBS,
     TOKEN_KW_TEQ,
     TOKEN_KW_TST,
     TOKEN_KW_ASL,

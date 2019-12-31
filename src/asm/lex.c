@@ -58,6 +58,7 @@ static struct keyword {
     { "sl", TOKEN_KW_SL },
     { "sp", TOKEN_KW_SP },
     { "sub", TOKEN_KW_SUB },
+    { "subs", TOKEN_KW_SUBS },
     { "teq", TOKEN_KW_TEQ },
     { "tst", TOKEN_KW_TST },
 };
