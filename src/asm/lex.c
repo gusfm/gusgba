@@ -15,6 +15,7 @@ static struct keyword {
     token_type_t value;
 } keywords[] = {
     { "adc", TOKEN_KW_ADC },
+    { "adcs", TOKEN_KW_ADCS },
     { "add", TOKEN_KW_ADD },
     { "adds", TOKEN_KW_ADDS },
     { "and", TOKEN_KW_AND },

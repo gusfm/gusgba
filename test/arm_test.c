@@ -34,7 +34,7 @@ uint16_t mmu_read_half_word(uint32_t addr)
 
 static int test_arm_rd(const char *src, int rd, uint32_t rd_val, uint32_t flags)
 {
-    arm_psr_t f = { .psr = (flags | default_flags) };
+    arm_psr_t f = {.psr = (flags | default_flags)};
     mem_pos = 0;
     asm_to_opcode(src, memory, sizeof(memory));
     arm_step();
@@ -139,6 +139,17 @@ static int arm_add_test(void)
     return 0;
 }
 
+static int arm_adc_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("adc r0, r1, r8", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("adc r0, r8, r8", R0, 0xfffffffe, 0) == 0);
+    ASSERT(test_arm_rd("adcs r0, r1, r1", R0, 0x00000002, 0) == 0);
+    ASSERT(test_arm_rd("adcs r0, r1, r8", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("adcs r0, r8, r8", R0, 0xfffffffe, N) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -156,4 +167,5 @@ void arm_test(void)
     ut_run(arm_sub_test);
     ut_run(arm_rsb_test);
     ut_run(arm_add_test);
+    ut_run(arm_adc_test);
 }

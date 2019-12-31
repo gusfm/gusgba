@@ -29,6 +29,7 @@ typedef enum {
     TOKEN_KW_LR,
     TOKEN_KW_PC,
     TOKEN_KW_ADC,
+    TOKEN_KW_ADCS,
     TOKEN_KW_ADD,
     TOKEN_KW_ADDS,
     TOKEN_KW_AND,
