@@ -8,11 +8,21 @@
 #define OPER_DP_AND(func) \
     arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode)
 
-#define OPER_DP_ANDS(func) \
-    do { \
-        arm.shift_carry = 0; \
+#define OPER_DP_EOR(func) \
+    arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode)
+
+#define OPER_DP_ANDS(func)              \
+    do {                                \
+        arm.shift_carry = 0;            \
         uint32_t d = OPER_DP_AND(func); \
-        arm_psr_set_nzc(&arm.cpsr, d); \
+        arm_psr_set_nzc(&arm.cpsr, d);  \
+    } while (0)
+
+#define OPER_DP_EORS(func)              \
+    do {                                \
+        arm.shift_carry = 0;            \
+        uint32_t d = OPER_DP_EOR(func); \
+        arm_psr_set_nzc(&arm.cpsr, d);  \
     } while (0)
 
 #define INSTR_DP_REG(op)                                                      \
@@ -177,10 +187,44 @@ static void ands_lsr_reg(uint32_t opcode) { OPER_DP_ANDS(dp_lsr_reg); }
 static void ands_asr_reg(uint32_t opcode) { OPER_DP_ANDS(dp_asr_reg); }
 /* ANDS Rd, Rn, Rm, ROR Rs */
 static void ands_ror_reg(uint32_t opcode) { OPER_DP_ANDS(dp_ror_reg); }
+/* EOR Rd, Rn, Rm, LSL # */
+static void eor_lsl_imm(uint32_t opcode) { OPER_DP_EOR(dp_lsl_imm); }
+/* EOR Rd, Rn, Rm, LSR # */
+static void eor_lsr_imm(uint32_t opcode) { OPER_DP_EOR(dp_lsr_imm); }
+/* EOR Rd, Rn, Rm, ASR # */
+static void eor_asr_imm(uint32_t opcode) { OPER_DP_EOR(dp_asr_imm); }
+/* EOR Rd, Rn, Rm, ROR # */
+static void eor_ror_imm(uint32_t opcode) { OPER_DP_EOR(dp_ror_imm); }
+/* EOR Rd, Rn, Rm, LSL Rs */
+static void eor_lsl_reg(uint32_t opcode) { OPER_DP_EOR(dp_lsl_reg); }
+/* EOR Rd, Rn, Rm, LSR Rs */
+static void eor_lsr_reg(uint32_t opcode) { OPER_DP_EOR(dp_lsr_reg); }
+/* EOR Rd, Rn, Rm, ASR Rs */
+static void eor_asr_reg(uint32_t opcode) { OPER_DP_EOR(dp_asr_reg); }
+/* EOR Rd, Rn, Rm, ROR Rs */
+static void eor_ror_reg(uint32_t opcode) { OPER_DP_EOR(dp_ror_reg); }
+/* EORS Rd, Rn, Rm, LSL # */
+static void eors_lsl_imm(uint32_t opcode) { OPER_DP_EORS(dp_lsl_imm); }
+/* EORS Rd, Rn, Rm, LSR # */
+static void eors_lsr_imm(uint32_t opcode) { OPER_DP_EORS(dp_lsr_imm); }
+/* EORS Rd, Rn, Rm, ASR # */
+static void eors_asr_imm(uint32_t opcode) { OPER_DP_EORS(dp_asr_imm); }
+/* EORS Rd, Rn, Rm, ROR # */
+static void eors_ror_imm(uint32_t opcode) { OPER_DP_EORS(dp_ror_imm); }
+/* EORS Rd, Rn, Rm, LSL Rs */
+static void eors_lsl_reg(uint32_t opcode) { OPER_DP_EORS(dp_lsl_reg); }
+/* EORS Rd, Rn, Rm, LSR Rs */
+static void eors_lsr_reg(uint32_t opcode) { OPER_DP_EORS(dp_lsr_reg); }
+/* EORS Rd, Rn, Rm, ASR Rs */
+static void eors_asr_reg(uint32_t opcode) { OPER_DP_EORS(dp_asr_reg); }
+/* EORS Rd, Rn, Rm, ROR Rs */
+static void eors_ror_reg(uint32_t opcode) { OPER_DP_EORS(dp_ror_reg); }
 
 /* clang-format on */
 
 arm_instr_t arm_instr[0xfff] = {
-    /* 0x000 - 0x01f */
-    INSTR_DP_REG(and)
+    /* 0x000 */
+    INSTR_DP_REG(and),
+    /* 0x020 */
+    INSTR_DP_REG(eor),
 };

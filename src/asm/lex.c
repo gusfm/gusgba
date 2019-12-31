@@ -24,6 +24,7 @@ static struct keyword {
     { "cmn", TOKEN_KW_CMN },
     { "cmp", TOKEN_KW_CMP },
     { "eor", TOKEN_KW_EOR },
+    { "eors", TOKEN_KW_EORS },
     { "fp", TOKEN_KW_FP },
     { "ip", TOKEN_KW_IP },
     { "lr", TOKEN_KW_LR },

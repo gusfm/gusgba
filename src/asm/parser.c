@@ -208,7 +208,7 @@ static int parse_oper2(parser_t *p, oper2_t *oper2)
     return PARSER_OK;
 }
 
-static int parse_cmd_and(parser_t *p, bool s)
+static int parse_cmd_dp(parser_t *p, uint32_t opcode, bool s)
 {
     reg_t rd, rn;
     oper2_t oper2;
@@ -228,7 +228,7 @@ static int parse_cmd_and(parser_t *p, bool s)
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm_enc_and_imm(COND_AL, s, rd, rn, &oper2));
+    return out_u32(p->out, arm_enc_and_imm(COND_AL, opcode, s, rd, rn, &oper2));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
@@ -237,9 +237,13 @@ static int parse_cmd(parser_t *p, token_t *tok)
     token_destroy(tok);
     switch (tok_type) {
         case TOKEN_KW_AND:
-            return parse_cmd_and(p, false);
+            return parse_cmd_dp(p, 0x0, false);
         case TOKEN_KW_ANDS:
-            return parse_cmd_and(p, true);
+            return parse_cmd_dp(p, 0x0, true);
+        case TOKEN_KW_EOR:
+            return parse_cmd_dp(p, 0x1, false);
+        case TOKEN_KW_EORS:
+            return parse_cmd_dp(p, 0x1, true);
         default:
             return PARSER_ERR_CMD;
     }

@@ -13,7 +13,8 @@
 
 static uint8_t memory[0x10];
 static int mem_pos;
-static uint32_t default_flags = ARM_PSR_IRQ_DISABLE | ARM_PSR_FIQ_DISABLE | ARM_PSR_SVC_MODE;
+static uint32_t default_flags =
+    ARM_PSR_IRQ_DISABLE | ARM_PSR_FIQ_DISABLE | ARM_PSR_SVC_MODE;
 
 uint32_t mmu_read_word(uint32_t addr)
 {
@@ -54,7 +55,8 @@ static int arm_and_test(void)
     /* LSR imm */
     ASSERT_EQ(0, test_arm_rd("ands r0, r1, r2, lsr #1", R0, 0x00000001, 0));
     ASSERT_EQ(0, test_arm_rd("ands r0, r3, r4, lsr #1", R0, 0x00000002, 0));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, lsr #32", R0, 0x00000000, Z | C));
+    ASSERT_EQ(0,
+              test_arm_rd("ands r0, r8, r8, lsr #32", R0, 0x00000000, Z | C));
     /* ASR imm */
     ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, asr #1", R0, 0xffffffff, N | C));
     ASSERT_EQ(0, test_arm_rd("ands r0, r7, r8, asr #31", R0, 0x00000007, C));
@@ -62,7 +64,8 @@ static int arm_and_test(void)
     ASSERT_EQ(0, test_arm_rd("ands r0, r8, r9, asr #31", R0, 0x00000000, Z));
     /* ROR imm */
     ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, ror #1", R0, 0xffffffff, N | C));
-    ASSERT_EQ(0, test_arm_rd("ands r0, r8, r8, ror #31", R0, 0xffffffff, N | C));
+    ASSERT_EQ(0,
+              test_arm_rd("ands r0, r8, r8, ror #31", R0, 0xffffffff, N | C));
     ASSERT_EQ(0, test_arm_rd("ands r0, r8, r7, ror #4", R0, 0x70000000, 0));
     /* LSL reg */
     ASSERT_EQ(0, test_arm_rd("ands r0, r2, r1, lsl r1", R0, 0x00000002, 0));
@@ -83,6 +86,15 @@ static int arm_and_test(void)
     return 0;
 }
 
+static int arm_eor_test(void)
+{
+    ASSERT_EQ(0, test_arm_rd("eors r0, r0, r0", R0, 0x00000000, Z));
+    ASSERT_EQ(0, test_arm_rd("eors r0, r0, r1", R0, 0x00000001, 0));
+    ASSERT_EQ(0, test_arm_rd("eors r0, r1, r2", R0, 0x00000003, 0));
+    ASSERT_EQ(0, test_arm_rd("eors r0, r1, r8", R0, 0xfffffffe, N));
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -96,4 +108,5 @@ void arm_test(void)
     arm.r[8] = 0xffffffff;
     arm.r[9] = 0x7fffffff;
     ut_run(arm_and_test);
+    ut_run(arm_eor_test);
 }

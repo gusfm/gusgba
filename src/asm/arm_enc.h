@@ -73,6 +73,7 @@ typedef struct {
     };
 } oper2_t;
 
-uint32_t arm_enc_and_imm(cond_t cond, bool s, reg_t rd, reg_t rn, oper2_t *o);
+uint32_t arm_enc_and_imm(cond_t cond, uint32_t opcode, bool s, reg_t rd,
+                         reg_t rn, oper2_t *o);
 
 #endif /* ARM_ENC_H */
