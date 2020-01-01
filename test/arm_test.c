@@ -112,7 +112,9 @@ static int arm_sub_test(void)
     ASSERT(test_arm_rd("subs r0, r0, r0", R0, 0x00000000, Z) == 0);
     ASSERT(test_arm_rd("subs r0, r1, r0", R0, 0x00000001, 0) == 0);
     ASSERT(test_arm_rd("subs r0, r2, r1", R0, 0x00000001, 0) == 0);
-    ASSERT(test_arm_rd("subs r0, r1, r2", R0, 0xffffffff, N) == 0);
+    ASSERT(test_arm_rd("subs r0, r1, r2", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("subs r0, r9, r8", R0, 0x80000000, N | C | V) == 0);
+    ASSERT(test_arm_rd("subs r0, r10, r1", R0, 0x7fffffff, V) == 0);
     return 0;
 }
 
@@ -124,7 +126,9 @@ static int arm_rsb_test(void)
     ASSERT(test_arm_rd("rsbs r0, r0, r0", R0, 0x00000000, Z) == 0);
     ASSERT(test_arm_rd("rsbs r0, r0, r1", R0, 0x00000001, 0) == 0);
     ASSERT(test_arm_rd("rsbs r0, r1, r2", R0, 0x00000001, 0) == 0);
-    ASSERT(test_arm_rd("rsbs r0, r2, r1", R0, 0xffffffff, N) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r2, r1", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r8, r9", R0, 0x80000000, N | C | V) == 0);
+    ASSERT(test_arm_rd("rsbs r0, r1, r10", R0, 0x7fffffff, V) == 0);
     return 0;
 }
 
@@ -134,8 +138,10 @@ static int arm_add_test(void)
     ASSERT(test_arm_rd("add r0, r1, r8", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("add r0, r8, r8", R0, 0xfffffffe, 0) == 0);
     ASSERT(test_arm_rd("adds r0, r1, r1", R0, 0x00000002, 0) == 0);
-    ASSERT(test_arm_rd("adds r0, r1, r8", R0, 0x00000000, Z) == 0);
-    ASSERT(test_arm_rd("adds r0, r8, r8", R0, 0xfffffffe, N) == 0);
+    ASSERT(test_arm_rd("adds r0, r1, r8", R0, 0x00000000, Z | C) == 0);
+    ASSERT(test_arm_rd("adds r0, r8, r8", R0, 0xfffffffe, N | C) == 0);
+    ASSERT(test_arm_rd("adds r0, r9, r1", R0, 0x80000000, N | V) == 0);
+    ASSERT(test_arm_rd("adds r0, r10, r8", R0, 0x7fffffff, C | V) == 0);
     return 0;
 }
 
@@ -145,8 +151,10 @@ static int arm_adc_test(void)
     ASSERT(test_arm_rd("adc r0, r1, r8", R0, 0x00000000, 0) == 0);
     ASSERT(test_arm_rd("adc r0, r8, r8", R0, 0xfffffffe, 0) == 0);
     ASSERT(test_arm_rd("adcs r0, r1, r1", R0, 0x00000002, 0) == 0);
-    ASSERT(test_arm_rd("adcs r0, r1, r8", R0, 0x00000000, Z) == 0);
-    ASSERT(test_arm_rd("adcs r0, r8, r8", R0, 0xfffffffe, N) == 0);
+    ASSERT(test_arm_rd("adcs r0, r1, r8", R0, 0x00000000, Z | C) == 0);
+    ASSERT(test_arm_rd("adcs r0, r8, r8", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("adcs r0, r9, r1", R0, 0x80000001, N | V) == 0);
+    ASSERT(test_arm_rd("adcs r0, r10, r8", R0, 0x7fffffff, C | V) == 0);
     return 0;
 }
 
@@ -162,6 +170,7 @@ void arm_test(void)
     arm.r[7] = 0x07;
     arm.r[8] = 0xffffffff;
     arm.r[9] = 0x7fffffff;
+    arm.r[10] = 0x80000000;
     ut_run(arm_and_test);
     ut_run(arm_eor_test);
     ut_run(arm_sub_test);
