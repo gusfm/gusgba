@@ -21,7 +21,7 @@ static const char *arm_debug_dp_get_code(uint32_t opcode)
         case 6:
             return "sbc";
         case 7:
-            return "";
+            return "rsc";
         case 8:
             return "";
         case 9:
@@ -85,7 +85,7 @@ static void arm_debug_dp(uint32_t opcode)
 }
 
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
-    [0x000 ... 0x0df] = arm_debug_dp,
+    [0x000 ... 0x0ff] = arm_debug_dp,
 };
 
 void arm_debug(uint32_t opcode)

@@ -57,6 +57,7 @@ static struct keyword {
     { "rsb", TOKEN_KW_RSB },
     { "rsbs", TOKEN_KW_RSBS },
     { "rsc", TOKEN_KW_RSC },
+    { "rscs", TOKEN_KW_RSCS },
     { "sbc", TOKEN_KW_SBC },
     { "sbcs", TOKEN_KW_SBCS },
     { "sl", TOKEN_KW_SL },
