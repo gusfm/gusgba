@@ -20,54 +20,54 @@
 /* Arithmetic data processing operations. */
 #define DP_OPER_SUB(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] - func(opcode))
-#define DP_OPER_SUBS(func)                     \
-    do {                                       \
-        uint32_t n = arm.r[OPCODE_REG(16)];    \
-        uint32_t m = func(opcode);             \
-        uint64_t d = (uint64_t)n - m;          \
-        arm.r[OPCODE_REG(12)] = (uint32_t)d;   \
-        arm_psr_sub_arith(&arm.cpsr, n, m, d); \
+#define DP_OPER_SUBS(func)                              \
+    do {                                                \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];           \
+        uint32_t op2 = func(opcode);                    \
+        uint64_t result = (uint64_t)op1 - op2;          \
+        arm.r[OPCODE_REG(12)] = (uint32_t)result;       \
+        arm_psr_sub_arith(&arm.cpsr, op1, op2, result); \
     } while (0)
 #define DP_OPER_RSB(func) \
     (arm.r[OPCODE_REG(12)] = func(opcode) - arm.r[OPCODE_REG(16)])
-#define DP_OPER_RSBS(func)                     \
-    do {                                       \
-        uint32_t n = arm.r[OPCODE_REG(16)];    \
-        uint32_t m = func(opcode);             \
-        uint64_t d = (uint64_t)m - n;          \
-        arm.r[OPCODE_REG(12)] = (uint32_t)d;   \
-        arm_psr_sub_arith(&arm.cpsr, m, n, d); \
+#define DP_OPER_RSBS(func)                              \
+    do {                                                \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];           \
+        uint32_t op2 = func(opcode);                    \
+        uint64_t result = (uint64_t)op2 - op1;          \
+        arm.r[OPCODE_REG(12)] = (uint32_t)result;       \
+        arm_psr_sub_arith(&arm.cpsr, op2, op1, result); \
     } while (0)
 #define DP_OPER_ADD(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] + func(opcode))
-#define DP_OPER_ADDS(func)                     \
-    do {                                       \
-        uint32_t n = arm.r[OPCODE_REG(16)];    \
-        uint32_t m = func(opcode);             \
-        uint64_t d = (uint64_t)n + m;          \
-        arm.r[OPCODE_REG(12)] = (uint32_t)d;   \
-        arm_psr_add_arith(&arm.cpsr, n, m, d); \
+#define DP_OPER_ADDS(func)                              \
+    do {                                                \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];           \
+        uint32_t op2 = func(opcode);                    \
+        uint64_t result = (uint64_t)op1 + op2;          \
+        arm.r[OPCODE_REG(12)] = (uint32_t)result;       \
+        arm_psr_add_arith(&arm.cpsr, op1, op2, result); \
     } while (0)
 #define DP_OPER_ADC(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] + func(opcode) + arm.cpsr.c)
-#define DP_OPER_ADCS(func)                         \
-    do {                                           \
-        uint32_t n = arm.r[OPCODE_REG(16)];        \
-        uint32_t m = func(opcode);                 \
-        uint64_t d = (uint64_t)n + m + arm.cpsr.c; \
-        arm.r[OPCODE_REG(12)] = (uint32_t)d;       \
-        arm_psr_add_arith(&arm.cpsr, n, m, d);     \
+#define DP_OPER_ADCS(func)                                  \
+    do {                                                    \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];               \
+        uint32_t op2 = func(opcode);                        \
+        uint64_t result = (uint64_t)op1 + op2 + arm.cpsr.c; \
+        arm.r[OPCODE_REG(12)] = (uint32_t)result;           \
+        arm_psr_add_arith(&arm.cpsr, op1, op2, result);     \
     } while (0)
 #define DP_OPER_SBC(func)    \
     (arm.r[OPCODE_REG(12)] = \
          arm.r[OPCODE_REG(16)] - func(opcode) + arm.cpsr.c - 1)
-#define DP_OPER_SBCS(func)                             \
-    do {                                               \
-        uint32_t n = arm.r[OPCODE_REG(16)];            \
-        uint32_t m = func(opcode);                     \
-        uint64_t d = (uint64_t)n - m + arm.cpsr.c - 1; \
-        arm.r[OPCODE_REG(12)] = (uint32_t)d;           \
-        arm_psr_sub_arith(&arm.cpsr, n, m, d);         \
+#define DP_OPER_SBCS(func)                                      \
+    do {                                                        \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];                   \
+        uint32_t op2 = func(opcode);                            \
+        uint64_t result = (uint64_t)op1 - op2 + arm.cpsr.c - 1; \
+        arm.r[OPCODE_REG(12)] = (uint32_t)result;               \
+        arm_psr_sub_arith(&arm.cpsr, op1, op2, result);         \
     } while (0)
 
 /* Data processing function declaration. */
@@ -97,32 +97,32 @@ static uint32_t ror_mask[32] = {
     0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff, 0x0fffffff, 0x1fffffff,
     0x3fffffff, 0x7fffffff};
 
-static inline void arm_psr_logical(arm_psr_t *psr, uint32_t d)
+static inline void arm_psr_logical(arm_psr_t *psr, uint32_t result)
 {
-    uint32_t fn = d & ARM_PSR_NEGATIVE;
-    uint32_t fz = !d << ARM_PSR_ZERO_SHIFT;
+    uint32_t fn = result & ARM_PSR_NEGATIVE;
+    uint32_t fz = !result << ARM_PSR_ZERO_SHIFT;
     uint32_t fc = arm.shift_carry << ARM_PSR_CARRY_SHIFT;
     psr->psr = fn | fz | fc | (psr->psr & 0x1fffffff);
 }
 
 static inline void arm_psr_sub_arith(arm_psr_t *psr, uint32_t op1, uint32_t op2,
-                                     uint64_t d)
+                                     uint64_t result)
 {
-    uint32_t d32 = (uint32_t)d;
+    uint32_t d32 = (uint32_t)result;
     uint32_t fn = d32 & ARM_PSR_NEGATIVE;
     uint32_t fz = !d32 << ARM_PSR_ZERO_SHIFT;
-    uint32_t fc = ((uint32_t)(d >> 32) & 1) << ARM_PSR_CARRY_SHIFT;
+    uint32_t fc = ((uint32_t)(result >> 32) & 1) << ARM_PSR_CARRY_SHIFT;
     uint32_t fv = (((op1 ^ op2) & (op1 ^ d32)) >> 31) << ARM_PSR_OVERFLOW_SHIFT;
     psr->psr = fn | fz | fc | fv | (psr->psr & 0x0fffffff);
 }
 
 static inline void arm_psr_add_arith(arm_psr_t *psr, uint32_t op1, uint32_t op2,
-                                     uint64_t d)
+                                     uint64_t result)
 {
-    uint32_t d32 = (uint32_t)d;
+    uint32_t d32 = (uint32_t)result;
     uint32_t fn = d32 & ARM_PSR_NEGATIVE;
     uint32_t fz = !d32 << ARM_PSR_ZERO_SHIFT;
-    uint32_t fc = (uint32_t)(d >> 32) << ARM_PSR_CARRY_SHIFT;
+    uint32_t fc = (uint32_t)(result >> 32) << ARM_PSR_CARRY_SHIFT;
     uint32_t fv = (((~(op1 ^ op2)) & (op1 ^ d32)) >> 31)
                   << ARM_PSR_OVERFLOW_SHIFT;
     psr->psr = fn | fz | fc | fv | (psr->psr & 0x0fffffff);
