@@ -66,6 +66,7 @@ static struct keyword {
     { "subs", TOKEN_KW_SUBS },
     { "teq", TOKEN_KW_TEQ },
     { "tst", TOKEN_KW_TST },
+    { "tsts", TOKEN_KW_TSTS },
 };
 
 /* clang-format on */

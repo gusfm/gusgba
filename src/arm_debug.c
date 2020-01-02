@@ -23,7 +23,7 @@ static const char *arm_debug_dp_get_code(uint32_t opcode)
         case 7:
             return "rsc";
         case 8:
-            return "";
+            return "tst";
         case 9:
             return "";
         case 10:
@@ -63,7 +63,7 @@ static void arm_debug_dp(uint32_t opcode)
 {
     const char *code = arm_debug_dp_get_code(opcode);
     const char *shift_tp = shift_type(opcode);
-    const char *s = opcode & 0x100000 ? "s" : "";
+    const char *s = opcode & 0x100000 && ((opcode >> 21) & 0xf) < 8 ? "s" : "";
     uint32_t rd = (opcode >> 12) & 0xf;
     uint32_t rn = (opcode >> 16) & 0xf;
     uint32_t rm = opcode & 0xf;
@@ -85,7 +85,7 @@ static void arm_debug_dp(uint32_t opcode)
 }
 
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
-    [0x000 ... 0x0ff] = arm_debug_dp,
+    [0x000 ... 0x11f] = arm_debug_dp,
 };
 
 void arm_debug(uint32_t opcode)

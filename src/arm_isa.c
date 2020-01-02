@@ -9,6 +9,7 @@
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & func(opcode))
 #define DP_OPER_EOR(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode))
+#define DP_OPER_TST(func) (arm.r[OPCODE_REG(16)] & func(opcode))
 
 /* Set condition codes for logical data processing operation. */
 #define DP_CCL(val)                      \
@@ -491,6 +492,38 @@ static void rscs_lsr_reg(uint32_t opcode) { DP_OPER_RSCS(dp_lsr_reg); }
 static void rscs_asr_reg(uint32_t opcode) { DP_OPER_RSCS(dp_asr_reg); }
 /* RSCS Rd, Rn, Rm, ROR Rs */
 static void rscs_ror_reg(uint32_t opcode) { DP_OPER_RSCS(dp_ror_reg); }
+/* TST Rd, Rn, Rm, LSL # */
+static void tst_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_imm)); }
+/* TST Rd, Rn, Rm, LSR # */
+static void tst_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_imm)); }
+/* TST Rd, Rn, Rm, ASR # */
+static void tst_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_imm)); }
+/* TST Rd, Rn, Rm, ROR # */
+static void tst_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_imm)); }
+/* TST Rd, Rn, Rm, LSL Rs */
+static void tst_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_reg)); }
+/* TST Rd, Rn, Rm, LSR Rs */
+static void tst_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_reg)); }
+/* TST Rd, Rn, Rm, ASR Rs */
+static void tst_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_reg)); }
+/* TST Rd, Rn, Rm, ROR Rs */
+static void tst_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_reg)); }
+/* TSTS Rd, Rn, Rm, LSL # */
+static void tsts_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_imm)); }
+/* TSTS Rd, Rn, Rm, LSR # */
+static void tsts_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_imm)); }
+/* TSTS Rd, Rn, Rm, ASR # */
+static void tsts_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_imm)); }
+/* TSTS Rd, Rn, Rm, ROR # */
+static void tsts_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_imm)); }
+/* TSTS Rd, Rn, Rm, LSL Rs */
+static void tsts_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_reg)); }
+/* TSTS Rd, Rn, Rm, LSR Rs */
+static void tsts_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_reg)); }
+/* TSTS Rd, Rn, Rm, ASR Rs */
+static void tsts_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_reg)); }
+/* TSTS Rd, Rn, Rm, ROR Rs */
+static void tsts_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_reg)); }
 
 /* clang-format on */
 
@@ -511,4 +544,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG(sbc),
     /* 0x0e0 */
     INSTR_DP_REG(rsc),
+    /* 0x100 */
+    INSTR_DP_REG(tst),
 };
