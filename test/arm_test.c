@@ -229,6 +229,17 @@ static int arm_tst_test(void)
 
     return 0;
 }
+
+static int arm_teq_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("teq r0, r0, r0", R0, 0x00000000, Z) == 0);
+    ASSERT(test_arm_rd("teq r0, r0, r1", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("teq r0, r1, r2", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("teq r0, r1, r8", R0, 0x00000000, N) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -251,4 +262,5 @@ void arm_test(void)
     ut_run(arm_sbc_test);
     ut_run(arm_rsc_test);
     ut_run(arm_tst_test);
+    ut_run(arm_teq_test);
 }

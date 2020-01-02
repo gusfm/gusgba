@@ -10,6 +10,7 @@
 #define DP_OPER_EOR(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode))
 #define DP_OPER_TST(func) (arm.r[OPCODE_REG(16)] & func(opcode))
+#define DP_OPER_TEQ(func) (arm.r[OPCODE_REG(16)] ^ func(opcode))
 
 /* Set condition codes for logical data processing operation. */
 #define DP_CCL(val)                      \
@@ -524,6 +525,38 @@ static void tsts_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_reg)); }
 static void tsts_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_reg)); }
 /* TSTS Rd, Rn, Rm, ROR Rs */
 static void tsts_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_reg)); }
+/* TEQ Rd, Rn, Rm, LSL # */
+static void teq_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_imm)); }
+/* TEQ Rd, Rn, Rm, LSR # */
+static void teq_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_imm)); }
+/* TEQ Rd, Rn, Rm, ASR # */
+static void teq_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_imm)); }
+/* TEQ Rd, Rn, Rm, ROR # */
+static void teq_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_imm)); }
+/* TEQ Rd, Rn, Rm, LSL Rs */
+static void teq_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_reg)); }
+/* TEQ Rd, Rn, Rm, LSR Rs */
+static void teq_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_reg)); }
+/* TEQ Rd, Rn, Rm, ASR Rs */
+static void teq_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_reg)); }
+/* TEQ Rd, Rn, Rm, ROR Rs */
+static void teq_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_reg)); }
+/* TEQS Rd, Rn, Rm, LSL # */
+static void teqs_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_imm)); }
+/* TEQS Rd, Rn, Rm, LSR # */
+static void teqs_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_imm)); }
+/* TEQS Rd, Rn, Rm, ASR # */
+static void teqs_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_imm)); }
+/* TEQS Rd, Rn, Rm, ROR # */
+static void teqs_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_imm)); }
+/* TEQS Rd, Rn, Rm, LSL Rs */
+static void teqs_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_reg)); }
+/* TEQS Rd, Rn, Rm, LSR Rs */
+static void teqs_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_reg)); }
+/* TEQS Rd, Rn, Rm, ASR Rs */
+static void teqs_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_reg)); }
+/* TEQS Rd, Rn, Rm, ROR Rs */
+static void teqs_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_reg)); }
 
 /* clang-format on */
 
@@ -546,4 +579,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG(rsc),
     /* 0x100 */
     INSTR_DP_REG(tst),
+    /* 0x120 */
+    INSTR_DP_REG(teq),
 };
