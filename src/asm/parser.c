@@ -260,6 +260,10 @@ static int parse_cmd(parser_t *p, token_t *tok)
             return parse_cmd_dp(p, 0x5, false);
         case TOKEN_KW_ADCS:
             return parse_cmd_dp(p, 0x5, true);
+        case TOKEN_KW_SBC:
+            return parse_cmd_dp(p, 0x6, false);
+        case TOKEN_KW_SBCS:
+            return parse_cmd_dp(p, 0x6, true);
         default:
             return PARSER_ERR_CMD;
     }

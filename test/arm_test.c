@@ -158,6 +158,20 @@ static int arm_adc_test(void)
     return 0;
 }
 
+static int arm_sbc_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("sbc r0, r0, r0", R0, 0xffffffff, 0) == 0);
+    ASSERT(test_arm_rd("sbc r0, r1, r2", R0, 0xfffffffe, 0) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r0, r0", R0, 0xffffffff, N | C) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r1, r8", R0, 0x00000002, C) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r2, r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r1, r2", R0, 0xfffffffe, N | C) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r9, r8", R0, 0x80000000, N | C | V) == 0);
+    ASSERT(test_arm_rd("sbcs r0, r10, r1", R0, 0x7fffffff, V) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -177,4 +191,5 @@ void arm_test(void)
     ut_run(arm_rsb_test);
     ut_run(arm_add_test);
     ut_run(arm_adc_test);
+    ut_run(arm_sbc_test);
 }
