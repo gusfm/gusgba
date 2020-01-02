@@ -82,6 +82,13 @@
         arm.r[OPCODE_REG(12)] = (uint32_t)result;               \
         arm_psr_sub_arith(&arm.cpsr, op2, op1, result);         \
     } while (0)
+#define DP_OPER_CMP(func)                               \
+    do {                                                \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];           \
+        uint32_t op2 = func(opcode);                    \
+        uint64_t result = (uint64_t)op1 - op2;          \
+        arm_psr_sub_arith(&arm.cpsr, op1, op2, result); \
+    } while (0)
 
 /* Data processing function declaration. */
 #define INSTR_DP_REG(op)                                                      \
@@ -93,6 +100,15 @@
         op##s_ror_reg, op##s_lsl_imm, op##s_lsl_reg, op##s_lsr_imm,           \
         op##s_lsr_reg, op##s_asr_imm, op##s_asr_reg, op##s_ror_imm,           \
         op##s_ror_reg
+
+#define INSTR_DP_REG_NO_RD(op)                                                \
+    op##_lsl_imm, op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, op##_asr_imm,     \
+        op##_asr_reg, op##_ror_imm, op##_ror_reg, op##_lsl_imm, op##_lsl_reg, \
+        op##_lsr_imm, op##_lsr_reg, op##_asr_imm, op##_asr_reg, op##_ror_imm, \
+        op##_ror_reg, op##_lsl_imm, op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, \
+        op##_asr_imm, op##_asr_reg, op##_ror_imm, op##_ror_reg, op##_lsl_imm, \
+        op##_lsl_reg, op##_lsr_imm, op##_lsr_reg, op##_asr_imm, op##_asr_reg, \
+        op##_ror_imm, op##_ror_reg
 
 static uint32_t asr_mask[32] = {
     0xffffffff, 0x80000000, 0xc0000000, 0xe0000000, 0xf0000000, 0xf8000000,
@@ -509,22 +525,6 @@ static void tst_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_reg)); }
 static void tst_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_reg)); }
 /* TST Rd, Rn, Rm, ROR Rs */
 static void tst_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_reg)); }
-/* TSTS Rd, Rn, Rm, LSL # */
-static void tsts_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_imm)); }
-/* TSTS Rd, Rn, Rm, LSR # */
-static void tsts_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_imm)); }
-/* TSTS Rd, Rn, Rm, ASR # */
-static void tsts_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_imm)); }
-/* TSTS Rd, Rn, Rm, ROR # */
-static void tsts_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_imm)); }
-/* TSTS Rd, Rn, Rm, LSL Rs */
-static void tsts_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsl_reg)); }
-/* TSTS Rd, Rn, Rm, LSR Rs */
-static void tsts_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_lsr_reg)); }
-/* TSTS Rd, Rn, Rm, ASR Rs */
-static void tsts_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_asr_reg)); }
-/* TSTS Rd, Rn, Rm, ROR Rs */
-static void tsts_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TST(dp_ror_reg)); }
 /* TEQ Rd, Rn, Rm, LSL # */
 static void teq_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_imm)); }
 /* TEQ Rd, Rn, Rm, LSR # */
@@ -541,22 +541,22 @@ static void teq_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_reg)); }
 static void teq_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_reg)); }
 /* TEQ Rd, Rn, Rm, ROR Rs */
 static void teq_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_reg)); }
-/* TEQS Rd, Rn, Rm, LSL # */
-static void teqs_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_imm)); }
-/* TEQS Rd, Rn, Rm, LSR # */
-static void teqs_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_imm)); }
-/* TEQS Rd, Rn, Rm, ASR # */
-static void teqs_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_imm)); }
-/* TEQS Rd, Rn, Rm, ROR # */
-static void teqs_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_imm)); }
-/* TEQS Rd, Rn, Rm, LSL Rs */
-static void teqs_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsl_reg)); }
-/* TEQS Rd, Rn, Rm, LSR Rs */
-static void teqs_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_lsr_reg)); }
-/* TEQS Rd, Rn, Rm, ASR Rs */
-static void teqs_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_asr_reg)); }
-/* TEQS Rd, Rn, Rm, ROR Rs */
-static void teqs_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_TEQ(dp_ror_reg)); }
+/* CMP Rd, Rn, Rm, LSL # */
+static void cmp_lsl_imm(uint32_t opcode) { DP_OPER_CMP(dp_lsl_imm); }
+/* CMP Rd, Rn, Rm, LSR # */
+static void cmp_lsr_imm(uint32_t opcode) { DP_OPER_CMP(dp_lsr_imm); }
+/* CMP Rd, Rn, Rm, ASR # */
+static void cmp_asr_imm(uint32_t opcode) { DP_OPER_CMP(dp_asr_imm); }
+/* CMP Rd, Rn, Rm, ROR # */
+static void cmp_ror_imm(uint32_t opcode) { DP_OPER_CMP(dp_ror_imm); }
+/* CMP Rd, Rn, Rm, LSL Rs */
+static void cmp_lsl_reg(uint32_t opcode) { DP_OPER_CMP(dp_lsl_reg); }
+/* CMP Rd, Rn, Rm, LSR Rs */
+static void cmp_lsr_reg(uint32_t opcode) { DP_OPER_CMP(dp_lsr_reg); }
+/* CMP Rd, Rn, Rm, ASR Rs */
+static void cmp_asr_reg(uint32_t opcode) { DP_OPER_CMP(dp_asr_reg); }
+/* CMP Rd, Rn, Rm, ROR Rs */
+static void cmp_ror_reg(uint32_t opcode) { DP_OPER_CMP(dp_ror_reg); }
 
 /* clang-format on */
 
@@ -578,7 +578,9 @@ arm_instr_t arm_instr[0xfff] = {
     /* 0x0e0 */
     INSTR_DP_REG(rsc),
     /* 0x100 */
-    INSTR_DP_REG(tst),
+    INSTR_DP_REG_NO_RD(tst),
     /* 0x120 */
-    INSTR_DP_REG(teq),
+    INSTR_DP_REG_NO_RD(teq),
+    /* 0x140 */
+    INSTR_DP_REG_NO_RD(cmp),
 };

@@ -270,12 +270,10 @@ static int parse_cmd(parser_t *p, token_t *tok)
             return parse_cmd_dp(p, 0x7, true);
         case TOKEN_KW_TST:
             return parse_cmd_dp(p, 0x8, true);
-        case TOKEN_KW_TSTS:
-            return parse_cmd_dp(p, 0x8, true);
         case TOKEN_KW_TEQ:
             return parse_cmd_dp(p, 0x9, true);
-        case TOKEN_KW_TEQS:
-            return parse_cmd_dp(p, 0x9, true);
+        case TOKEN_KW_CMP:
+            return parse_cmd_dp(p, 0xa, true);
         default:
             return PARSER_ERR_CMD;
     }
