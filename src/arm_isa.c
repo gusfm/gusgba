@@ -89,6 +89,13 @@
         uint64_t result = (uint64_t)op1 - op2;          \
         arm_psr_sub_arith(&arm.cpsr, op1, op2, result); \
     } while (0)
+#define DP_OPER_CMN(func)                              \
+    do {                                                \
+        uint32_t op1 = arm.r[OPCODE_REG(16)];           \
+        uint32_t op2 = func(opcode);                    \
+        uint64_t result = (uint64_t)op1 + op2;          \
+        arm_psr_add_arith(&arm.cpsr, op1, op2, result); \
+    } while (0)
 
 /* Data processing function declaration. */
 #define INSTR_DP_REG(op)                                                      \
@@ -557,6 +564,22 @@ static void cmp_lsr_reg(uint32_t opcode) { DP_OPER_CMP(dp_lsr_reg); }
 static void cmp_asr_reg(uint32_t opcode) { DP_OPER_CMP(dp_asr_reg); }
 /* CMP Rd, Rn, Rm, ROR Rs */
 static void cmp_ror_reg(uint32_t opcode) { DP_OPER_CMP(dp_ror_reg); }
+/* CMN Rd, Rn, Rm, LSL # */
+static void cmn_lsl_imm(uint32_t opcode) { DP_OPER_CMN(dp_lsl_imm); }
+/* CMN Rd, Rn, Rm, LSR # */
+static void cmn_lsr_imm(uint32_t opcode) { DP_OPER_CMN(dp_lsr_imm); }
+/* CMN Rd, Rn, Rm, ASR # */
+static void cmn_asr_imm(uint32_t opcode) { DP_OPER_CMN(dp_asr_imm); }
+/* CMN Rd, Rn, Rm, ROR # */
+static void cmn_ror_imm(uint32_t opcode) { DP_OPER_CMN(dp_ror_imm); }
+/* CMN Rd, Rn, Rm, LSL Rs */
+static void cmn_lsl_reg(uint32_t opcode) { DP_OPER_CMN(dp_lsl_reg); }
+/* CMN Rd, Rn, Rm, LSR Rs */
+static void cmn_lsr_reg(uint32_t opcode) { DP_OPER_CMN(dp_lsr_reg); }
+/* CMN Rd, Rn, Rm, ASR Rs */
+static void cmn_asr_reg(uint32_t opcode) { DP_OPER_CMN(dp_asr_reg); }
+/* CMN Rd, Rn, Rm, ROR Rs */
+static void cmn_ror_reg(uint32_t opcode) { DP_OPER_CMN(dp_ror_reg); }
 
 /* clang-format on */
 
@@ -583,4 +606,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG_NO_RD(teq),
     /* 0x140 */
     INSTR_DP_REG_NO_RD(cmp),
+    /* 0x160 */
+    INSTR_DP_REG_NO_RD(cmn),
 };

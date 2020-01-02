@@ -274,6 +274,8 @@ static int parse_cmd(parser_t *p, token_t *tok)
             return parse_cmd_dp(p, 0x9, true);
         case TOKEN_KW_CMP:
             return parse_cmd_dp(p, 0xa, true);
+        case TOKEN_KW_CMN:
+            return parse_cmd_dp(p, 0xb, true);
         default:
             return PARSER_ERR_CMD;
     }

@@ -252,6 +252,17 @@ static int arm_cmp_test(void)
     return 0;
 }
 
+static int arm_cmn_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("cmn r0, r1, r1", R0, 0x00000000, 0) == 0);
+    ASSERT(test_arm_rd("cmn r0, r1, r8", R0, 0x00000000, Z | C) == 0);
+    ASSERT(test_arm_rd("cmn r0, r8, r8", R0, 0x00000000, N | C) == 0);
+    ASSERT(test_arm_rd("cmn r0, r9, r1", R0, 0x00000000, N | V) == 0);
+    ASSERT(test_arm_rd("cmn r0, r10, r8", R0, 0x00000000, C | V) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -276,4 +287,5 @@ void arm_test(void)
     ut_run(arm_tst_test);
     ut_run(arm_teq_test);
     ut_run(arm_cmp_test);
+    ut_run(arm_cmn_test);
 }
