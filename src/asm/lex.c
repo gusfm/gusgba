@@ -33,6 +33,7 @@ static struct keyword {
     { "lsl", TOKEN_KW_LSL },
     { "lsr", TOKEN_KW_LSR },
     { "mov", TOKEN_KW_MOV },
+    { "movs", TOKEN_KW_MOVS },
     { "mvn", TOKEN_KW_MVN },
     { "orr", TOKEN_KW_ORR },
     { "orrs", TOKEN_KW_ORRS },

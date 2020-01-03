@@ -275,6 +275,17 @@ static int arm_orr_test(void)
     return 0;
 }
 
+static int arm_mov_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("mov r0, r8", R0, 0xffffffff, 0) == 0);
+    ASSERT(test_arm_rd("movs r0, r1", R0, 0x00000001, 0) == 0);
+    ASSERT(test_arm_rd("movs r0, r8", R0, 0xffffffff, N) == 0);
+    ASSERT(test_arm_rd("movs r0, r8, lsl #1", R0, 0xfffffffe, N | C) == 0);
+    ASSERT(test_arm_rd("movs r0, r1, lsr #1", R0, 0x00000000, Z | C) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -301,4 +312,5 @@ void arm_test(void)
     ut_run(arm_cmp_test);
     ut_run(arm_cmn_test);
     ut_run(arm_orr_test);
+    ut_run(arm_mov_test);
 }

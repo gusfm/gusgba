@@ -13,6 +13,7 @@
 #define DP_OPER_TEQ(func) (arm.r[OPCODE_REG(16)] ^ func(opcode))
 #define DP_OPER_ORR(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] | func(opcode))
+#define DP_OPER_MOV(func) (arm.r[OPCODE_REG(12)] = func(opcode))
 
 /* Set condition codes for logical data processing operation. */
 #define DP_CCL(val)                      \
@@ -614,6 +615,38 @@ static void orrs_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_lsr_reg)); }
 static void orrs_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_asr_reg)); }
 /* ORRS Rd, Rn, Rm, ROR Rs */
 static void orrs_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_ror_reg)); }
+/* MOV Rd, Rn, Rm, LSL # */
+static void mov_lsl_imm(uint32_t opcode) { DP_OPER_MOV(dp_lsl_imm); }
+/* MOV Rd, Rn, Rm, LSR # */
+static void mov_lsr_imm(uint32_t opcode) { DP_OPER_MOV(dp_lsr_imm); }
+/* MOV Rd, Rn, Rm, ASR # */
+static void mov_asr_imm(uint32_t opcode) { DP_OPER_MOV(dp_asr_imm); }
+/* MOV Rd, Rn, Rm, ROR # */
+static void mov_ror_imm(uint32_t opcode) { DP_OPER_MOV(dp_ror_imm); }
+/* MOV Rd, Rn, Rm, LSL Rs */
+static void mov_lsl_reg(uint32_t opcode) { DP_OPER_MOV(dp_lsl_reg); }
+/* MOV Rd, Rn, Rm, LSR Rs */
+static void mov_lsr_reg(uint32_t opcode) { DP_OPER_MOV(dp_lsr_reg); }
+/* MOV Rd, Rn, Rm, ASR Rs */
+static void mov_asr_reg(uint32_t opcode) { DP_OPER_MOV(dp_asr_reg); }
+/* MOV Rd, Rn, Rm, ROR Rs */
+static void mov_ror_reg(uint32_t opcode) { DP_OPER_MOV(dp_ror_reg); }
+/* MOVS Rd, Rn, Rm, LSL # */
+static void movs_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_lsl_imm)); }
+/* MOVS Rd, Rn, Rm, LSR # */
+static void movs_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_lsr_imm)); }
+/* MOVS Rd, Rn, Rm, ASR # */
+static void movs_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_asr_imm)); }
+/* MOVS Rd, Rn, Rm, ROR # */
+static void movs_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_ror_imm)); }
+/* MOVS Rd, Rn, Rm, LSL Rs */
+static void movs_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_lsl_reg)); }
+/* MOVS Rd, Rn, Rm, LSR Rs */
+static void movs_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_lsr_reg)); }
+/* MOVS Rd, Rn, Rm, ASR Rs */
+static void movs_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_asr_reg)); }
+/* MOVS Rd, Rn, Rm, ROR Rs */
+static void movs_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_MOV(dp_ror_reg)); }
 
 /* clang-format on */
 
@@ -644,4 +677,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG_NO_RD(cmn),
     /* 0x180 */
     INSTR_DP_REG(orr),
+    /* 0x1a0 */
+    INSTR_DP_REG(mov),
 };

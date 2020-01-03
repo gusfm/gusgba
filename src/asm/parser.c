@@ -208,7 +208,7 @@ static int parse_oper2(parser_t *p, oper2_t *oper2)
     return PARSER_OK;
 }
 
-static int parse_cmd_dp(parser_t *p, uint32_t opcode, bool s)
+static int parse_cmd_dp_rd_rn(parser_t *p, uint32_t opcode, bool s)
 {
     reg_t rd, rn;
     oper2_t oper2;
@@ -231,55 +231,77 @@ static int parse_cmd_dp(parser_t *p, uint32_t opcode, bool s)
     return out_u32(p->out, arm_enc_and_imm(COND_AL, opcode, s, rd, rn, &oper2));
 }
 
+static int parse_cmd_dp_rd(parser_t *p, uint32_t opcode, bool s)
+{
+    reg_t rd;
+    oper2_t oper2;
+
+    CHK(parse_reg(parser_next_token_type(p), &rd));
+    if (parser_next_token_type(p) != ',') {
+        return PARSER_ERR_SYNTAX;
+    }
+
+    CHK(parse_oper2(p, &oper2));
+    if (parser_next_token_type(p) != TOKEN_END) {
+        return PARSER_ERR_SYNTAX;
+    }
+
+    return out_u32(p->out, arm_enc_and_imm(COND_AL, opcode, s, rd, 0, &oper2));
+}
+
 static int parse_cmd(parser_t *p, token_t *tok)
 {
     token_type_t tok_type = tok->type;
     token_destroy(tok);
     switch (tok_type) {
         case TOKEN_KW_AND:
-            return parse_cmd_dp(p, 0x0, false);
+            return parse_cmd_dp_rd_rn(p, 0x0, false);
         case TOKEN_KW_ANDS:
-            return parse_cmd_dp(p, 0x0, true);
+            return parse_cmd_dp_rd_rn(p, 0x0, true);
         case TOKEN_KW_EOR:
-            return parse_cmd_dp(p, 0x1, false);
+            return parse_cmd_dp_rd_rn(p, 0x1, false);
         case TOKEN_KW_EORS:
-            return parse_cmd_dp(p, 0x1, true);
+            return parse_cmd_dp_rd_rn(p, 0x1, true);
         case TOKEN_KW_SUB:
-            return parse_cmd_dp(p, 0x2, false);
+            return parse_cmd_dp_rd_rn(p, 0x2, false);
         case TOKEN_KW_SUBS:
-            return parse_cmd_dp(p, 0x2, true);
+            return parse_cmd_dp_rd_rn(p, 0x2, true);
         case TOKEN_KW_RSB:
-            return parse_cmd_dp(p, 0x3, false);
+            return parse_cmd_dp_rd_rn(p, 0x3, false);
         case TOKEN_KW_RSBS:
-            return parse_cmd_dp(p, 0x3, true);
+            return parse_cmd_dp_rd_rn(p, 0x3, true);
         case TOKEN_KW_ADD:
-            return parse_cmd_dp(p, 0x4, false);
+            return parse_cmd_dp_rd_rn(p, 0x4, false);
         case TOKEN_KW_ADDS:
-            return parse_cmd_dp(p, 0x4, true);
+            return parse_cmd_dp_rd_rn(p, 0x4, true);
         case TOKEN_KW_ADC:
-            return parse_cmd_dp(p, 0x5, false);
+            return parse_cmd_dp_rd_rn(p, 0x5, false);
         case TOKEN_KW_ADCS:
-            return parse_cmd_dp(p, 0x5, true);
+            return parse_cmd_dp_rd_rn(p, 0x5, true);
         case TOKEN_KW_SBC:
-            return parse_cmd_dp(p, 0x6, false);
+            return parse_cmd_dp_rd_rn(p, 0x6, false);
         case TOKEN_KW_SBCS:
-            return parse_cmd_dp(p, 0x6, true);
+            return parse_cmd_dp_rd_rn(p, 0x6, true);
         case TOKEN_KW_RSC:
-            return parse_cmd_dp(p, 0x7, false);
+            return parse_cmd_dp_rd_rn(p, 0x7, false);
         case TOKEN_KW_RSCS:
-            return parse_cmd_dp(p, 0x7, true);
+            return parse_cmd_dp_rd_rn(p, 0x7, true);
         case TOKEN_KW_TST:
-            return parse_cmd_dp(p, 0x8, true);
+            return parse_cmd_dp_rd_rn(p, 0x8, true);
         case TOKEN_KW_TEQ:
-            return parse_cmd_dp(p, 0x9, true);
+            return parse_cmd_dp_rd_rn(p, 0x9, true);
         case TOKEN_KW_CMP:
-            return parse_cmd_dp(p, 0xa, true);
+            return parse_cmd_dp_rd_rn(p, 0xa, true);
         case TOKEN_KW_CMN:
-            return parse_cmd_dp(p, 0xb, true);
+            return parse_cmd_dp_rd_rn(p, 0xb, true);
         case TOKEN_KW_ORR:
-            return parse_cmd_dp(p, 0xc, false);
+            return parse_cmd_dp_rd_rn(p, 0xc, false);
         case TOKEN_KW_ORRS:
-            return parse_cmd_dp(p, 0xc, true);
+            return parse_cmd_dp_rd_rn(p, 0xc, true);
+        case TOKEN_KW_MOV:
+            return parse_cmd_dp_rd(p, 0xd, false);
+        case TOKEN_KW_MOVS:
+            return parse_cmd_dp_rd(p, 0xd, true);
         default:
             return PARSER_ERR_CMD;
     }
