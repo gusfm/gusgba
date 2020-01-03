@@ -11,6 +11,8 @@
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] ^ func(opcode))
 #define DP_OPER_TST(func) (arm.r[OPCODE_REG(16)] & func(opcode))
 #define DP_OPER_TEQ(func) (arm.r[OPCODE_REG(16)] ^ func(opcode))
+#define DP_OPER_ORR(func) \
+    (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] | func(opcode))
 
 /* Set condition codes for logical data processing operation. */
 #define DP_CCL(val)                      \
@@ -89,7 +91,7 @@
         uint64_t result = (uint64_t)op1 - op2;          \
         arm_psr_sub_arith(&arm.cpsr, op1, op2, result); \
     } while (0)
-#define DP_OPER_CMN(func)                              \
+#define DP_OPER_CMN(func)                               \
     do {                                                \
         uint32_t op1 = arm.r[OPCODE_REG(16)];           \
         uint32_t op2 = func(opcode);                    \
@@ -580,6 +582,38 @@ static void cmn_lsr_reg(uint32_t opcode) { DP_OPER_CMN(dp_lsr_reg); }
 static void cmn_asr_reg(uint32_t opcode) { DP_OPER_CMN(dp_asr_reg); }
 /* CMN Rd, Rn, Rm, ROR Rs */
 static void cmn_ror_reg(uint32_t opcode) { DP_OPER_CMN(dp_ror_reg); }
+/* ORR Rd, Rn, Rm, LSL # */
+static void orr_lsl_imm(uint32_t opcode) { DP_OPER_ORR(dp_lsl_imm); }
+/* ORR Rd, Rn, Rm, LSR # */
+static void orr_lsr_imm(uint32_t opcode) { DP_OPER_ORR(dp_lsr_imm); }
+/* ORR Rd, Rn, Rm, ASR # */
+static void orr_asr_imm(uint32_t opcode) { DP_OPER_ORR(dp_asr_imm); }
+/* ORR Rd, Rn, Rm, ROR # */
+static void orr_ror_imm(uint32_t opcode) { DP_OPER_ORR(dp_ror_imm); }
+/* ORR Rd, Rn, Rm, LSL Rs */
+static void orr_lsl_reg(uint32_t opcode) { DP_OPER_ORR(dp_lsl_reg); }
+/* ORR Rd, Rn, Rm, LSR Rs */
+static void orr_lsr_reg(uint32_t opcode) { DP_OPER_ORR(dp_lsr_reg); }
+/* ORR Rd, Rn, Rm, ASR Rs */
+static void orr_asr_reg(uint32_t opcode) { DP_OPER_ORR(dp_asr_reg); }
+/* ORR Rd, Rn, Rm, ROR Rs */
+static void orr_ror_reg(uint32_t opcode) { DP_OPER_ORR(dp_ror_reg); }
+/* ORRS Rd, Rn, Rm, LSL # */
+static void orrs_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_lsl_imm)); }
+/* ORRS Rd, Rn, Rm, LSR # */
+static void orrs_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_lsr_imm)); }
+/* ORRS Rd, Rn, Rm, ASR # */
+static void orrs_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_asr_imm)); }
+/* ORRS Rd, Rn, Rm, ROR # */
+static void orrs_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_ror_imm)); }
+/* ORRS Rd, Rn, Rm, LSL Rs */
+static void orrs_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_lsl_reg)); }
+/* ORRS Rd, Rn, Rm, LSR Rs */
+static void orrs_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_lsr_reg)); }
+/* ORRS Rd, Rn, Rm, ASR Rs */
+static void orrs_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_asr_reg)); }
+/* ORRS Rd, Rn, Rm, ROR Rs */
+static void orrs_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_ORR(dp_ror_reg)); }
 
 /* clang-format on */
 
@@ -608,4 +642,6 @@ arm_instr_t arm_instr[0xfff] = {
     INSTR_DP_REG_NO_RD(cmp),
     /* 0x160 */
     INSTR_DP_REG_NO_RD(cmn),
+    /* 0x180 */
+    INSTR_DP_REG(orr),
 };
