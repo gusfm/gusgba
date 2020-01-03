@@ -228,7 +228,25 @@ static int parse_cmd_dp_rd_rn(parser_t *p, uint32_t opcode, bool s)
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm_enc_and_imm(COND_AL, opcode, s, rd, rn, &oper2));
+    return out_u32(p->out, arm_enc_dp(COND_AL, opcode, s, rd, rn, &oper2));
+}
+
+static int parse_cmd_dp_rn(parser_t *p, uint32_t opcode)
+{
+    reg_t rn;
+    oper2_t oper2;
+
+    CHK(parse_reg(parser_next_token_type(p), &rn));
+    if (parser_next_token_type(p) != ',') {
+        return PARSER_ERR_SYNTAX;
+    }
+
+    CHK(parse_oper2(p, &oper2));
+    if (parser_next_token_type(p) != TOKEN_END) {
+        return PARSER_ERR_SYNTAX;
+    }
+
+    return out_u32(p->out, arm_enc_dp(COND_AL, opcode, true, 0, rn, &oper2));
 }
 
 static int parse_cmd_dp_rd(parser_t *p, uint32_t opcode, bool s)
@@ -246,7 +264,7 @@ static int parse_cmd_dp_rd(parser_t *p, uint32_t opcode, bool s)
         return PARSER_ERR_SYNTAX;
     }
 
-    return out_u32(p->out, arm_enc_and_imm(COND_AL, opcode, s, rd, 0, &oper2));
+    return out_u32(p->out, arm_enc_dp(COND_AL, opcode, s, rd, 0, &oper2));
 }
 
 static int parse_cmd(parser_t *p, token_t *tok)
@@ -287,13 +305,13 @@ static int parse_cmd(parser_t *p, token_t *tok)
         case TOKEN_KW_RSCS:
             return parse_cmd_dp_rd_rn(p, 0x7, true);
         case TOKEN_KW_TST:
-            return parse_cmd_dp_rd_rn(p, 0x8, true);
+            return parse_cmd_dp_rn(p, 0x8);
         case TOKEN_KW_TEQ:
-            return parse_cmd_dp_rd_rn(p, 0x9, true);
+            return parse_cmd_dp_rn(p, 0x9);
         case TOKEN_KW_CMP:
-            return parse_cmd_dp_rd_rn(p, 0xa, true);
+            return parse_cmd_dp_rn(p, 0xa);
         case TOKEN_KW_CMN:
-            return parse_cmd_dp_rd_rn(p, 0xb, true);
+            return parse_cmd_dp_rn(p, 0xb);
         case TOKEN_KW_ORR:
             return parse_cmd_dp_rd_rn(p, 0xc, false);
         case TOKEN_KW_ORRS:

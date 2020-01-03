@@ -65,28 +65,36 @@ static void arm_debug_dp_get_oper2(uint32_t opcode, char *oper2, size_t size)
     uint32_t rm = opcode & 0xf;
     if (opcode & 0x10) {
         uint32_t rs = (opcode >> 8) & 0xf;
-        snprintf(oper2, size, "r%u, %s r%u\n", rm, shift_tp, rs);
+        snprintf(oper2, size, "r%u, %s r%u", rm, shift_tp, rs);
     } else {
         uint32_t shift = (opcode >> 7) & 0x1f;
         if (shift == 0 && opcode & 0x60)
             shift = 32;
         if (shift == 0 && (opcode & 0x60) == 0)
-            snprintf(oper2, size, "r%u\n", rm);
+            snprintf(oper2, size, "r%u", rm);
         else
-            snprintf(oper2, size, "r%u, %s #%u\n", rm, shift_tp, shift);
+            snprintf(oper2, size, "r%u, %s #%u", rm, shift_tp, shift);
     }
 }
 
 static void arm_debug_dp_rd_rn(uint32_t opcode)
 {
-    int oc = ((opcode >> 21) & 0xf);
     const char *code = arm_debug_dp_get_code(opcode);
-    const char *s = opcode & 0x100000 && (oc < 8 || oc > 0xb) ? "s" : "";
+    const char *s = opcode & 0x100000 ? "s" : "";
     uint32_t rd = (opcode >> 12) & 0xf;
     uint32_t rn = (opcode >> 16) & 0xf;
     char operand2[20];
     arm_debug_dp_get_oper2(opcode, operand2, sizeof(operand2));
-    printf("%s%s r%u, r%u, %s", code, s, rd, rn, operand2);
+    printf("%s%s r%u, r%u, %s\n", code, s, rd, rn, operand2);
+}
+
+static void arm_debug_dp_rn(uint32_t opcode)
+{
+    const char *code = arm_debug_dp_get_code(opcode);
+    uint32_t rn = (opcode >> 16) & 0xf;
+    char operand2[20];
+    arm_debug_dp_get_oper2(opcode, operand2, sizeof(operand2));
+    printf("%s r%u, %s\n", code, rn, operand2);
 }
 
 static void arm_debug_dp_rd(uint32_t opcode)
@@ -96,11 +104,13 @@ static void arm_debug_dp_rd(uint32_t opcode)
     uint32_t rd = (opcode >> 12) & 0xf;
     char operand2[20];
     arm_debug_dp_get_oper2(opcode, operand2, sizeof(operand2));
-    printf("%s%s r%u, %s", code, s, rd, operand2);
+    printf("%s%s r%u, %s\n", code, s, rd, operand2);
 }
 
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
-    [0x000 ... 0x19f] = arm_debug_dp_rd_rn,
+    [0x000 ... 0x0ff] = arm_debug_dp_rd_rn,
+    [0x100 ... 0x17f] = arm_debug_dp_rn,
+    [0x180 ... 0x19f] = arm_debug_dp_rd_rn,
     [0x1a0 ... 0x1bf] = arm_debug_dp_rd,
 };
 

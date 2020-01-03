@@ -21,8 +21,8 @@ static uint32_t enc_imm_oper(imm_val_t *i)
     return M4(i->rotate) << 8 | M8(i->imm);
 }
 
-uint32_t arm_enc_and_imm(cond_t cond, uint32_t opcode, bool s, reg_t rd,
-                         reg_t rn, oper2_t *o)
+uint32_t arm_enc_dp(cond_t cond, uint32_t opcode, bool s, reg_t rd, reg_t rn,
+                    oper2_t *o)
 {
     uint32_t oper2 =
         o->is_imm_val ? enc_imm_oper(&o->imm_val) : enc_shift(&o->shift);
