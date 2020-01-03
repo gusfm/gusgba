@@ -35,6 +35,7 @@ typedef enum {
     TOKEN_KW_AND,
     TOKEN_KW_ANDS,
     TOKEN_KW_BIC,
+    TOKEN_KW_BICS,
     TOKEN_KW_CMN,
     TOKEN_KW_CMP,
     TOKEN_KW_EOR,

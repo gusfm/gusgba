@@ -23,6 +23,7 @@ static struct keyword {
     { "asl", TOKEN_KW_ASL },
     { "asr", TOKEN_KW_ASR },
     { "bic", TOKEN_KW_BIC },
+    { "bics", TOKEN_KW_BICS },
     { "cmn", TOKEN_KW_CMN },
     { "cmp", TOKEN_KW_CMP },
     { "eor", TOKEN_KW_EOR },
