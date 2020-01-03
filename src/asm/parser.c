@@ -324,6 +324,10 @@ static int parse_cmd(parser_t *p, token_t *tok)
             return parse_cmd_dp_rd_rn(p, 0xe, false);
         case TOKEN_KW_BICS:
             return parse_cmd_dp_rd_rn(p, 0xe, true);
+        case TOKEN_KW_MVN:
+            return parse_cmd_dp_rd(p, 0xf, false);
+        case TOKEN_KW_MVNS:
+            return parse_cmd_dp_rd(p, 0xf, true);
         default:
             return PARSER_ERR_CMD;
     }

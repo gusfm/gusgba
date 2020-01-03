@@ -295,6 +295,15 @@ static int arm_bic_test(void)
     return 0;
 }
 
+static int arm_mvn_test(void)
+{
+    arm_reset();
+    ASSERT(test_arm_rd("mvn r0, r1", R0, 0xfffffffe, 0) == 0);
+    ASSERT(test_arm_rd("mvns r0, r1", R0, 0xfffffffe, N) == 0);
+    ASSERT(test_arm_rd("mvns r0, r8, lsl #1", R0, 0x00000001, C) == 0);
+    return 0;
+}
+
 void arm_test(void)
 {
     arm_init();
@@ -323,4 +332,5 @@ void arm_test(void)
     ut_run(arm_orr_test);
     ut_run(arm_mov_test);
     ut_run(arm_bic_test);
+    ut_run(arm_mvn_test);
 }

@@ -37,7 +37,7 @@ static const char *arm_debug_dp_get_code(uint32_t opcode)
         case 14:
             return "bic";
         case 15:
-            return "";
+            return "mvn";
         default:
             abort();
     }
@@ -113,6 +113,7 @@ static void (*instr_debug[0xfff])(uint32_t opcode) = {
     [0x180 ... 0x19f] = arm_debug_dp_rd_rn,
     [0x1a0 ... 0x1bf] = arm_debug_dp_rd,
     [0x1c0 ... 0x1df] = arm_debug_dp_rd_rn,
+    [0x1e0 ... 0x1ff] = arm_debug_dp_rd,
 };
 
 void arm_debug(uint32_t opcode)

@@ -36,6 +36,7 @@ static struct keyword {
     { "mov", TOKEN_KW_MOV },
     { "movs", TOKEN_KW_MOVS },
     { "mvn", TOKEN_KW_MVN },
+    { "mvns", TOKEN_KW_MVNS },
     { "orr", TOKEN_KW_ORR },
     { "orrs", TOKEN_KW_ORRS },
     { "pc", TOKEN_KW_PC },

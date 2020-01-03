@@ -16,6 +16,7 @@
 #define DP_OPER_MOV(func) (arm.r[OPCODE_REG(12)] = func(opcode))
 #define DP_OPER_BIC(func) \
     (arm.r[OPCODE_REG(12)] = arm.r[OPCODE_REG(16)] & ~func(opcode))
+#define DP_OPER_MVN(func) (arm.r[OPCODE_REG(12)] = ~func(opcode))
 
 /* Set condition codes for logical data processing operation. */
 #define DP_CCL(val)                      \
@@ -681,6 +682,38 @@ static void bics_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_BIC(dp_lsr_reg)); }
 static void bics_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_BIC(dp_asr_reg)); }
 /* BICS Rd, Rn, Rm, ROR Rs */
 static void bics_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_BIC(dp_ror_reg)); }
+/* MVN Rd, Rn, Rm, LSL # */
+static void mvn_lsl_imm(uint32_t opcode) { DP_OPER_MVN(dp_lsl_imm); }
+/* MVN Rd, Rn, Rm, LSR # */
+static void mvn_lsr_imm(uint32_t opcode) { DP_OPER_MVN(dp_lsr_imm); }
+/* MVN Rd, Rn, Rm, ASR # */
+static void mvn_asr_imm(uint32_t opcode) { DP_OPER_MVN(dp_asr_imm); }
+/* MVN Rd, Rn, Rm, ROR # */
+static void mvn_ror_imm(uint32_t opcode) { DP_OPER_MVN(dp_ror_imm); }
+/* MVN Rd, Rn, Rm, LSL Rs */
+static void mvn_lsl_reg(uint32_t opcode) { DP_OPER_MVN(dp_lsl_reg); }
+/* MVN Rd, Rn, Rm, LSR Rs */
+static void mvn_lsr_reg(uint32_t opcode) { DP_OPER_MVN(dp_lsr_reg); }
+/* MVN Rd, Rn, Rm, ASR Rs */
+static void mvn_asr_reg(uint32_t opcode) { DP_OPER_MVN(dp_asr_reg); }
+/* MVN Rd, Rn, Rm, ROR Rs */
+static void mvn_ror_reg(uint32_t opcode) { DP_OPER_MVN(dp_ror_reg); }
+/* MVNS Rd, Rn, Rm, LSL # */
+static void mvns_lsl_imm(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_lsl_imm)); }
+/* MVNS Rd, Rn, Rm, LSR # */
+static void mvns_lsr_imm(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_lsr_imm)); }
+/* MVNS Rd, Rn, Rm, ASR # */
+static void mvns_asr_imm(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_asr_imm)); }
+/* MVNS Rd, Rn, Rm, ROR # */
+static void mvns_ror_imm(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_ror_imm)); }
+/* MVNS Rd, Rn, Rm, LSL Rs */
+static void mvns_lsl_reg(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_lsl_reg)); }
+/* MVNS Rd, Rn, Rm, LSR Rs */
+static void mvns_lsr_reg(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_lsr_reg)); }
+/* MVNS Rd, Rn, Rm, ASR Rs */
+static void mvns_asr_reg(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_asr_reg)); }
+/* MVNS Rd, Rn, Rm, ROR Rs */
+static void mvns_ror_reg(uint32_t opcode) { DP_CCL(DP_OPER_MVN(dp_ror_reg)); }
 
 /* clang-format on */
 
@@ -700,4 +733,5 @@ arm_instr_t arm_instr[0xfff] = {
     /* 0x180 */ INSTR_DP_REG(orr),
     /* 0x1a0 */ INSTR_DP_REG(mov),
     /* 0x1c0 */ INSTR_DP_REG(bic),
+    /* 0x1e0 */ INSTR_DP_REG(mvn),
 };
