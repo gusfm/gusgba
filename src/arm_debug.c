@@ -63,7 +63,12 @@ static void arm_debug_dp_get_oper2(uint32_t opcode, char *oper2, size_t size)
 {
     const char *shift_tp = shift_type(opcode);
     uint32_t rm = opcode & 0xf;
-    if (opcode & 0x10) {
+    if (opcode & 0x2000000) {
+        uint32_t rotate = (opcode & 0xf00) >> 7;
+        uint32_t imm = opcode & 0xff;
+        uint32_t val = ((imm >> rotate) | (imm << (32 - rotate)));
+        snprintf(oper2, size, "#0x%x", val);
+    } else if (opcode & 0x10) {
         uint32_t rs = (opcode >> 8) & 0xf;
         snprintf(oper2, size, "r%u, %s r%u", rm, shift_tp, rs);
     } else {
@@ -107,6 +112,8 @@ static void arm_debug_dp_rd(uint32_t opcode)
     printf("%s%s r%u, %s\n", code, s, rd, operand2);
 }
 
+/* clang-format off */
+
 static void (*instr_debug[0xfff])(uint32_t opcode) = {
     [0x000 ... 0x0ff] = arm_debug_dp_rd_rn,
     [0x100 ... 0x17f] = arm_debug_dp_rn,
@@ -114,7 +121,15 @@ static void (*instr_debug[0xfff])(uint32_t opcode) = {
     [0x1a0 ... 0x1bf] = arm_debug_dp_rd,
     [0x1c0 ... 0x1df] = arm_debug_dp_rd_rn,
     [0x1e0 ... 0x1ff] = arm_debug_dp_rd,
+    [0x200 ... 0x2ff] = arm_debug_dp_rd_rn,
+    [0x300 ... 0x37f] = arm_debug_dp_rn,
+    [0x380 ... 0x39f] = arm_debug_dp_rd_rn,
+    [0x3a0 ... 0x3bf] = arm_debug_dp_rd,
+    [0x3c0 ... 0x3df] = arm_debug_dp_rd_rn,
+    [0x3e0 ... 0x3ff] = arm_debug_dp_rd,
 };
+
+/* clang-format on */
 
 void arm_debug(uint32_t opcode)
 {
